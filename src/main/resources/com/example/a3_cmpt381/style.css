@@ -1,0 +1,12 @@
+.MainUI * {
+    -fx-spacing: 4;
+    -fx-padding: 16;
+    -fx-font-size: 30;
+}
+
+.MainUI {
+}
+
+.ToolPalette .button {
+-fx-background-color: #70D0E0;
+}
