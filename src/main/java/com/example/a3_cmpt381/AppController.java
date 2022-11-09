@@ -77,10 +77,11 @@ public class AppController {
             case DRAGGING:
                 SMStateNode oldSelected = iModel.getOldSelectedNode();
                 SMStateNode newSelected = iModel.getNewSelectedNode();
-                if (smModel.anyIntersects((newSelected))) {
-                    iModel.setSelectedNode(oldSelected, 0, 0);
-                } else {
+                SMStateNode intersectee = smModel.anyIntersects(newSelected);
+                if (intersectee == oldSelected || intersectee == null) {
                     smModel.replaceNode(oldSelected, newSelected);
+                } else {
+                    iModel.setSelectedNode(oldSelected, 0, 0);
                 }
                 iModel.setInteractionState(InteractionState.READY);
                 break;
@@ -97,7 +98,7 @@ public class AppController {
     }
     private SMStateNode tryAddNode(double x, double y) {
         SMStateNode candidate = new SMStateNode(x, y);
-        if (!(smModel.anyIntersects(candidate))) {
+        if ((smModel.anyIntersects(candidate) != iModel.getOldSelectedNode()) || iModel.getOldSelectedNode() == null) {
             smModel.addNode(candidate);
             return candidate;
         }

@@ -34,11 +34,19 @@ public class SMModel extends ModelBase {
         return res;
     }
 
-    public boolean anyIntersects(Rectangle2D candidate) {
+//    public boolean anyIntersects(Rectangle2D candidate) {
+//        for (SMStateNode node : nodes) {
+//            if (node.intersects(candidate))
+//                    return true;
+//        }
+//        return false;
+//    }
+
+    public SMStateNode anyIntersects(Rectangle2D candidate) {
         for (SMStateNode node : nodes) {
             if (node.intersects(candidate))
-                    return true;
+                return node;
         }
-        return false;
+        return null;
     }
 }
