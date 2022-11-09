@@ -11,10 +11,12 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.min;
+import static java.lang.Math.*;
 
 public class DiagramView extends StackPane implements ModelListener {
     public static final double WIDTH = 300;
@@ -57,11 +59,20 @@ public class DiagramView extends StackPane implements ModelListener {
 
     private void redraw() {
         fillBackground(BACKGROUND_COLOR);
-        for (SMStateNode node: smModel.getNodes()) {
+        // states
+        for (SMStateNode node : smModel.getNodes()) {
             if (node == iModel.getOldSelectedNode())
                 drawSelectedNode();
             else
                 drawNode(node);
+        }
+        // transitions
+        for (SMTransitionLink link : smModel.getLinks()) {
+            drawArrow(link.getSource(), link.getDrain());
+        }
+        // user linking arrow
+        if (iModel.getInteractionState() == InteractionState.LINKING) {
+            drawArrow(iModel.getOldSelectedNode(), iModel.getX(), iModel.getY());
         }
     }
 
@@ -102,8 +113,40 @@ public class DiagramView extends StackPane implements ModelListener {
         gc.strokeText("selected", x, y + selectedNode.getHeight(), selectedNode.getWidth());
     }
 
-    public void drawLink(SMTransitionLink link) {
+    public void drawLinkBox(SMTransitionLink link) {
+        gc.setFill(Color.SADDLEBROWN);
+        gc.setStroke(Color.FIREBRICK);
+        gc.fillRoundRect(
+                link.getMinX(), link.getMinY(),
+                link.getWidth(), link.getHeight(),
+                link.RADIUS, link.RADIUS
+        );
+        gc.strokeRoundRect(
+                link.getMinX(), link.getMinY(),
+                link.getWidth(), link.getHeight(),
+                link.RADIUS, link.RADIUS
+        );
+    }
 
+    public void drawArrow(SMItem start, SMItem end) {
+        gc.setStroke(Color.DARKBLUE);
+//        arrowStart = start.getMiddle()
+        Point2D arrowStart = start.getMiddle();
+        Point2D arrowEnd = end.getMiddle();
+        gc.strokeLine(
+                arrowStart.getX(), arrowStart.getY(),
+                arrowEnd.getX(), arrowEnd.getY()
+        );
+    }
+
+    public void drawArrow(SMItem start, double endX, double endY) {
+        gc.setStroke(Color.DARKBLUE);
+//        arrowStart = start.getMiddle()
+        Point2D arrowStart = start.getMiddle();
+        gc.strokeLine(
+                arrowStart.getX(), arrowStart.getY(),
+                endX, endY
+        );
     }
 
     private void fillBackground(Color c) {
@@ -111,49 +154,82 @@ public class DiagramView extends StackPane implements ModelListener {
         gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
     }
 
+
     /* for rendering of transition arrows. given a slope and a starting point inside a rectangle,
      * calculate where that line intercepts the rectangular boundary
      */
+    private static Intercept getFirstIntercept(Point2D start, Point2D end, Rectangle2D rect) {
+        double slope = (end.getY() - start.getY()) / (end.getX() - start.getX());
+        // a*startX + b = startY
+        // b = startY - a*startX
+        double yIntercept = start.getY() - slope*start.getX();
+        Collection<Intercept> intercepts = getIntercepts(slope, yIntercept, rect);
+        switch (intercepts.size()) {
+            case 0:
+                return null;
+            case 1:
+                return intercepts.iterator().next();
+            case 2:
+                if (start.getX() < end.getX())
+                    return intercepts.stream()
+                            .min((i0, i1) -> (int) (i1.getX() - i0.getX()))
+                            .orElse(null);
+                else
+                    return intercepts.stream()
+                            .max((i0, i1) -> (int) (i1.getX() - i0.getX()))
+                            .orElse(null);
+            default:
+                System.out.println("more than 2 intercepts!?");
+                System.exit(1);
+                return null;
+        }
+    }
     
-    private static Intercepts getIntercepts(double startX, double startY, double slope, Rectangle2D rect) {
-        double nearX = abs(rect.getMinX() - startX) < abs(rect.getMaxX() - startX)
-                ? rect.getMinX()
-                : rect.getMaxX();
-        double nearY = abs(rect.getMinY() - startY) < abs(rect.getMaxY() - startY)
-                ? rect.getMinY()
-                : rect.getMaxY();
-        Intercepts res = return getIntercepts(startX, startY, slope, nearX, nearY);
-        return rect.contains(startX, startY)
-                ? res.near
+    private static Collection<Intercept> getIntercepts(double slope, double yIntercept, Rectangle2D rect) {
+        Collection<Intercept> verticalIntercepts = getVerticalIntercepts(slope, yIntercept, rect);
+        Collection<Intercept> horizontalIntercepts = getHorizontalIntercepts(slope, yIntercept, rect);
+        verticalIntercepts.addAll(horizontalIntercepts);
+        return verticalIntercepts;
+
     }
 
-    private static Intercepts getIntercepts(double startX, double startY, double slope, double vert, double horiz) {
-        // startX * slope + yIntercept = startY
-        double yIntercept = startY - (startX * slope);
-        Point2D vertIntercept = getVerticalIntercept(slope, yIntercept, vert);
-        Point2D horizIntercept = getHorizontalIntercept(slope, yIntercept, horiz);
-        // return the nearest intercept
-        // TODO potential optimization: only need to compare distance in 1 dimension to infer which is closer
-        return vertIntercept.distance(startX, startY) < horizIntercept.distance(startX, startY)
-                ? new Intercepts(vertIntercept, horizIntercept)
-                : new Intercepts(horizIntercept, vertIntercept);
+    private static Collection<Intercept> getHorizontalIntercepts(double slope, double yIntercept, Rectangle2D rect) {
+        Collection<Intercept> intercepts = new ArrayList(2);
+        intercepts.add(getHorizontalIntercept(slope, yIntercept, rect.getMinY()));
+        intercepts.add(getHorizontalIntercept(slope, yIntercept, rect.getMaxY()));
+        return intercepts.stream()
+                .filter(i -> rect.getMinX() <= i.getX() && i.getX() <= rect.getMaxX())
+                .toList();
     }
 
-    private static Point2D getHorizontalIntercept(double slope, double yIntercept, double horiz) {
+    private static Intercept getHorizontalIntercept(double slope, double yIntercept, double horiz) {
         // slope * x + yIntercept = horiz
-        return new Point2D(
+        return new Intercept(
                 (horiz - yIntercept) / slope,
                 horiz
                 );
     }
+    // postcondition: intercepts are sorted by min to max X
+    private static Collection<Intercept> getVerticalIntercepts(double slope, double yIntercept, Rectangle2D rect) {
+        Collection<Intercept> intercepts = new ArrayList(2);
+        intercepts.add(getVerticalIntercept(slope, yIntercept, rect.getMinX()));
+        intercepts.add(getVerticalIntercept(slope, yIntercept, rect.getMaxX()));
+        return intercepts.stream()
+                .filter(i -> rect.getMinY() <= i.getY() && i.getY() <= rect.getMaxY())
+                .toList();
+    }
 
-    private static Point2D getVerticalIntercept(double slope, double yIntercept, double vert) {
-        return new Point2D(
+    private static Intercept getVerticalIntercept(double slope, double yIntercept, double vert) {
+        return new Intercept(
                 vert,
                 slope * vert + yIntercept
         );
     }
 
     // when intersecting a line with a 2d-axis, there are two intercepts. one is closer. 
-    private record Intercepts(Point2D near, Point2D far) {};
+    private static class Intercept extends Point2D {
+        public Intercept(double v, double v1) {
+            super(v, v1);
+        }
+    };
 }

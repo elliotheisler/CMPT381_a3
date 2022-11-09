@@ -7,8 +7,8 @@ public class InteractionModel extends ModelBase {
     public static final double DRAG_THRESHOLD = 100;
 
     // cursor drag state
-    private double x, y, // current position
-            initX, initY, // drag starting position
+    private double x, y, // current drag position
+            initX, initY, // position where the drag started
             maxDX, maxDY; // maximum distance from initial position attained
     public double getX() {
         return x;
@@ -38,7 +38,7 @@ public class InteractionModel extends ModelBase {
     }
 
     public SMStateNode getNewSelectedNode() {
-        if (selectedNode != null && maxDX*maxDX + maxDY*maxDY > DRAG_THRESHOLD) {
+        if (iState == InteractionState.DRAGGING && maxDX*maxDX + maxDY*maxDY > DRAG_THRESHOLD) {
             return new SMStateNode(getSelectedX(), getSelectedY());
         }
         return selectedNode;
@@ -74,5 +74,7 @@ public class InteractionModel extends ModelBase {
 
     public void setInteractionState(InteractionState iState) {
         this.iState = iState;
+        notifySubscribers(); // not always necessary unfortunately
     }
+
 }

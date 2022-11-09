@@ -91,12 +91,12 @@ public class AppController {
             case LINKING:
                 SMStateNode source = iModel.getOldSelectedNode();
                 SMStateNode drain = smModel.getNode(e.getX(), e.getY());
+                iModel.setInteractionState(InteractionState.READY);
                 if (source == drain) {
                     System.out.println("transition to self not implemented");
                 } else if (drain != null) {
-                    smModel.addLink(SMTransitionLink.fromEndpoints(source, drain));
+                    smModel.addLink(SMTransitionLink.fromSourceDrain(source, drain));
                 }
-                iModel.setInteractionState(InteractionState.READY);
         }
     }
 

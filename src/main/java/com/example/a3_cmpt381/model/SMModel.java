@@ -4,6 +4,7 @@ import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Collection;
 
 public class SMModel extends ModelBase {
@@ -11,14 +12,14 @@ public class SMModel extends ModelBase {
     public Collection<SMStateNode> getNodes() {
         return nodes;
     }
-    private Collection<SMTransitionLink> links = new HashSet();
+    private Collection<SMTransitionLink> links = new LinkedList();
     public Collection<SMTransitionLink> getLinks() {
         return links;
     }
-    public boolean addLink(SMTransitionLink link) {
-        boolean res = links.add(link);
+
+    public void addLink(SMTransitionLink link) {
+        links.add(link);
         notifySubscribers();
-        return res;
     }
 
     public SMModel() {};
