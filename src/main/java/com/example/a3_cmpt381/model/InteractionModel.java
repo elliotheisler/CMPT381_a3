@@ -1,27 +1,29 @@
 package com.example.a3_cmpt381.model;
 
-import javafx.geometry.Point2D;
-import javafx.scene.canvas.GraphicsContext;
-
 import static java.lang.Double.max;
-import static java.lang.Math.pow;
 
 public class InteractionModel extends ModelBase {
     // (square of) radius of mouse movement required before drag initiated
     public static final double DRAG_THRESHOLD = 100;
 
-    // need to store seperate from selectedNode in order to mutate it, since Rectangle2D is immutable
-    private double x, y,
+    // cursor drag state
+    private double x, y, // current position
             initX, initY, // drag starting position
             maxDX, maxDY; // maximum distance from initial position attained
     public double getX() {
-        return selectedNode.getMinX() + x - initX;
+        return x;
     }
     public double getY() {
+        return y;
+    }
+    public double getSelectedX() {
+        return selectedNode.getMinX() + x - initX;
+    }
+    public double getSelectedY() {
         return selectedNode.getMinY() + y - initY;
     }
 
-    public void setSelectedPos(double x, double y) {
+    public void setCursorPos(double x, double y) {
         this.x = x;
         this.y = y;
         maxDX = max(x - initX, maxDX);
@@ -37,7 +39,7 @@ public class InteractionModel extends ModelBase {
 
     public SMStateNode getNewSelectedNode() {
         if (selectedNode != null && maxDX*maxDX + maxDY*maxDY > DRAG_THRESHOLD) {
-            return new SMStateNode(getX(), getY());
+            return new SMStateNode(getSelectedX(), getSelectedY());
         }
         return selectedNode;
     }
@@ -49,7 +51,7 @@ public class InteractionModel extends ModelBase {
         } else {
             initX = x;
             initY = y;
-            setSelectedPos(x, y);
+            setCursorPos(x, y);
         }
     }
 

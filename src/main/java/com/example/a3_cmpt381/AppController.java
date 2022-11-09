@@ -50,11 +50,11 @@ public class AppController {
                         System.out.println("panning not implemented");
                         break;
                     case LINK:
-//                        selected = getSelectedNode(e.getX(), e.getY());
-//                        if (selected != null) {
-//                            iModel.setSelectedNode(smModel.popNode(selected), e.getX(), e.getY());
-//                            iModel.setInteractionState(InteractionState.PRESSED);
-//                        }
+                        selected = smModel.getNode(e.getX(), e.getY());
+                        if (selected != null) {
+                            iModel.setSelectedNode(selected, e.getX(), e.getY());
+                            iModel.setInteractionState(InteractionState.LINKING);
+                        }
                 }
         }
     }
@@ -62,13 +62,13 @@ public class AppController {
     public void mouseDraggedCanvas(MouseEvent e) {
         switch (iModel.getInteractionState()) {
             case DRAGGING:
-                iModel.setSelectedPos(e.getX(), e.getY());
+                iModel.setCursorPos(e.getX(), e.getY());
                 break;
             case PANNING:
                 System.out.println("PANNING drag not implemented");
                 break;
             case LINKING:
-                System.out.println("LINKING drag not implemmented");
+                iModel.setCursorPos(e.getX(), e.getY());
         }
     }
 
@@ -89,7 +89,14 @@ public class AppController {
                 System.out.println("panning release not");
                 break;
             case LINKING:
-                System.out.println("linking release not");
+                SMStateNode source = iModel.getOldSelectedNode();
+                SMStateNode drain = smModel.getNode(e.getX(), e.getY());
+                if (source == drain) {
+                    System.out.println("transition to self not implemented");
+                } else if (drain != null) {
+                    smModel.addLink(SMTransitionLink.fromEndpoints(source, drain));
+                }
+                iModel.setInteractionState(InteractionState.READY);
         }
     }
 

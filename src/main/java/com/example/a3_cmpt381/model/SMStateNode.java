@@ -9,7 +9,6 @@ public class SMStateNode extends SMItem {
     public static final double WIDTH = 40;
     public static final double HEIGHT = 30;
 
-
     public SMStateNode(double x, double y) {
         super(x, y, WIDTH, HEIGHT);
     }
@@ -17,4 +16,11 @@ public class SMStateNode extends SMItem {
         this(point.getX(), point.getY());
     }
 
+
+    public Point2D getMiddle() {
+        return new Point2D(
+                getMinX() + getWidth() / 2,
+                getMinY() + getHeight() / 2
+        );
+    }
 }

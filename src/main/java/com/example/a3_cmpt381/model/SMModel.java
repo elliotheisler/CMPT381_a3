@@ -11,6 +11,15 @@ public class SMModel extends ModelBase {
     public Collection<SMStateNode> getNodes() {
         return nodes;
     }
+    private Collection<SMTransitionLink> links = new HashSet();
+    public Collection<SMTransitionLink> getLinks() {
+        return links;
+    }
+    public boolean addLink(SMTransitionLink link) {
+        boolean res = links.add(link);
+        notifySubscribers();
+        return res;
+    }
 
     public SMModel() {};
 
