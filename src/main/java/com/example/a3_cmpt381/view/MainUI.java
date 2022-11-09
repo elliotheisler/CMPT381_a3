@@ -22,11 +22,12 @@ public class MainUI extends StackPane {
 
         diagramView.setController(controller);
         diagramView.setSMModel(smModel);
+        diagramView.setIModel(iModel);
 
         controller.setIModel(iModel);
         controller.setSMModel(smModel);
 
-        iModel.addSubscribers(toolPalette);
+        iModel.addSubscribers(toolPalette, diagramView);
         smModel.addSubscribers(diagramView);
 
         HBox root = new HBox();

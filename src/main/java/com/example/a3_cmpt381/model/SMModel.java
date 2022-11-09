@@ -14,19 +14,19 @@ public class SMModel extends ModelBase {
 
     public SMModel() {};
 
-    public SMStateNode getNode(Point2D canvasPoint) {
+    public SMStateNode getNode(double x, double y) {
         for (SMStateNode node: nodes) {
-            if (node.contains(canvasPoint))
+            if (node.contains(x, y))
                 return node;
         }
         return null;
     }
 
+    public SMStateNode tryAddNode(Point2D p) {
+        return tryAddNode(p.getX(), p.getY());
+    }
     public SMStateNode tryAddNode(double x, double y) {
-        SMStateNode candidate = new SMStateNode(
-                x - SMStateNode.WIDTH / 2,
-                y - SMStateNode.HEIGHT / 2
-                );
+        SMStateNode candidate = new SMStateNode(x, y);
         if (!anyIntersects(candidate)) {
             nodes.add(candidate);
             notifySubscribers();
@@ -35,7 +35,19 @@ public class SMModel extends ModelBase {
         return null;
     }
 
-    private boolean anyIntersects(Rectangle2D candidate) {
+    public void updateNode(SMStateNode original, SMStateNode newSelected) {
+        nodes.remove(original);
+        nodes.add(newSelected);
+        notifySubscribers();
+    }
+
+    public boolean addNode(SMStateNode node) {
+        boolean res = nodes.add(node);
+        notifySubscribers();
+        return res;
+    }
+
+    public boolean anyIntersects(Rectangle2D candidate) {
         for (SMStateNode node : nodes) {
             if (node.intersects(candidate))
                     return true;

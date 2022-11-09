@@ -21,13 +21,19 @@ public class DiagramView extends StackPane implements ModelListener {
     private GraphicsContext gc = canvas.getGraphicsContext2D();
 
     private SMModel smModel;
-
     public void setSMModel(SMModel smModel) {
         this.smModel = smModel;
     }
 
+    private InteractionModel iModel;
+    public void setIModel(InteractionModel iModel) {
+        this.iModel = iModel;
+    }
+
     public void modelChanged(Class<?> c) {
         if (c == SMModel.class) {
+            redraw();
+        } else if (c == InteractionModel.class) {
             redraw();
         }
     }
@@ -50,8 +56,30 @@ public class DiagramView extends StackPane implements ModelListener {
         gc.setFill(Color.BEIGE);
         gc.setStroke(Color.BLACK);
         for (SMStateNode node: smModel.getNodes()) {
-            node.draw(gc);
+            if (node == iModel.getSelectedNode())
+                drawSelectedNode(gc);
+            else
+                node.draw(gc);
         }
+    }
+
+    public void drawSelectedNode(GraphicsContext gc) {
+        SMStateNode selectedNode = iModel.getSelectedNode();
+        double x = iModel.getX();
+        double y = iModel.getY();
+        gc.fillRect(
+                x,
+                y,
+                selectedNode.getWidth(),
+                selectedNode.getHeight()
+        );
+        gc.strokeRect(
+                x,
+                y,
+                selectedNode.getWidth(),
+                selectedNode.getHeight()
+        );
+        gc.strokeText("selected", x, y + selectedNode.getHeight(), selectedNode.getWidth());
     }
 
     private void fillBackground(Color c) {

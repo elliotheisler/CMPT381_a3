@@ -3,6 +3,7 @@ package com.example.a3_cmpt381;
 import com.example.a3_cmpt381.model.*;
 import javafx.event.ActionEvent;
 import javafx.geometry.Point2D;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.input.MouseEvent;
 
 public class AppController {
@@ -29,27 +30,53 @@ public class AppController {
     }
 
     public void mouseDraggedCanvas(MouseEvent e) {
+        switch (iModel.getInteractionState()) {
+            case DRAGGING:
+                iModel.setSelectedPos(
+                        toMiddlePoint(e.getX(), e.getY(), iModel.getSelectedNode())
+                );
+                break;
+            case PANNING:
+                System.out.println("PANNING drag not implemented");
+                break;
+            case LINKING:
+                System.out.println("LINKING drag not implemmented");
+        }
     }
 
     public void mouseReleaseCanvas(MouseEvent e) {
-        iModel.setInteractionState(InteractionState.READY);
+        switch (iModel.getInteractionState()) {
+            case DRAGGING:
+                SMStateNode oldSelected = iModel.getSelectedNode();
+                SMStateNode newSelected = iModel.popNewSelectedNode();
+                smModel.updateNode(oldSelected,
+                        smModel.anyIntersects(newSelected)
+                                ? oldSelected
+                                : newSelected
+                        );
+                iModel.setInteractionState(InteractionState.READY);
+                break;
+            case PANNING:
+                System.out.println("panning release not");
+                break;
+            case LINKING:
+                System.out.println("linking release not");
+        }
     }
 
     public void mouseClickCanvas(MouseEvent e) {
     }
 
     public void mousePressCanvas(MouseEvent e) {
-        Point2D canvasPoint = new Point2D(e.getX(), e.getY());
         switch (iModel.getInteractionState()) {
             case READY:
                 switch (iModel.getCursorMode()) {
                     case DRAG:
-                        SMStateNode selected = smModel.getNode(canvasPoint);
+                        SMStateNode selected = smModel.getNode(e.getX(), e.getY());
                         if (selected == null) {
-                            smModel.tryAddNode(e.getX(), e.getY());
+                            smModel.tryAddNode(toMiddlePoint(e.getX(), e.getY(), SMStateNode.WIDTH, SMStateNode.HEIGHT));
                         } else {
                             iModel.setSelectedNode(selected);
-                            System.out.println("selected: " + iModel.getSelectedNode());
                             iModel.setInteractionState(InteractionState.DRAGGING);
                         }
                         break;
@@ -62,4 +89,10 @@ public class AppController {
         }
     }
 
+    private Point2D toMiddlePoint(double x, double y, Rectangle2D r) {
+        return toMiddlePoint(x, y, r.getWidth(), r.getHeight());
+    }
+    private Point2D toMiddlePoint(double x, double y, double width, double height) {
+        return new Point2D(x - width / 2, y - height / 2);
+    }
 }
