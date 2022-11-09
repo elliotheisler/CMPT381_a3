@@ -11,8 +11,8 @@ public class AppController {
     public void setSMModel(SMModel smModel) {
         this.smModel = smModel;
     }
-    private InteractionModel iModel;
 
+    private InteractionModel iModel;
     public void setIModel(InteractionModel iModel) {
         this.iModel = iModel;
     }
@@ -33,44 +33,34 @@ public class AppController {
     }
 
     public void mousePressCanvas(MouseEvent e) {
+        SMStateNode selected;
         switch (iModel.getInteractionState()) {
             case READY:
                 switch (iModel.getCursorMode()) {
                     case DRAG:
-                        SMStateNode selected = smModel.getNode(e.getX(), e.getY());
-                        /* TODO: change selected behaviour to avoid code like this
-                         * stop popping/pushing selected to/from SMModel
-                         */
-                        if (selected == null) {
-                            selected =
-                                    iModel.getSelectedNode() != null && iModel.getSelectedNode().contains(e.getX(), e.getY())
-                                    ? iModel.getSelectedNode()
-                                    : null;
-                        }
+                        selected = smModel.getNode(e.getX(), e.getY());
                         if (selected == null) {
                             tryAddNode(fromMiddlePoint(e.getX(), e.getY(), SMStateNode.WIDTH, SMStateNode.HEIGHT));
                         } else {
-                            if (iModel.getSelectedNode() != null)
-                                smModel.addNode(iModel.getSelectedNode());
-                            iModel.setSelectedNode(smModel.popNode(selected), e.getX(), e.getY());
-                            iModel.setInteractionState(InteractionState.PRESSED);
+                            iModel.setSelectedNode(selected, e.getX(), e.getY());
+                            iModel.setInteractionState(InteractionState.DRAGGING);
                         }
                         break;
                     case PAN:
                         System.out.println("panning not implemented");
                         break;
                     case LINK:
-                        System.out.println("linking not implemented");
+//                        selected = getSelectedNode(e.getX(), e.getY());
+//                        if (selected != null) {
+//                            iModel.setSelectedNode(smModel.popNode(selected), e.getX(), e.getY());
+//                            iModel.setInteractionState(InteractionState.PRESSED);
+//                        }
                 }
         }
     }
 
     public void mouseDraggedCanvas(MouseEvent e) {
         switch (iModel.getInteractionState()) {
-            case PRESSED:
-                iModel.setSelectedPos(e.getX(), e.getY());
-                iModel.setInteractionState(InteractionState.DRAGGING);
-                break;
             case DRAGGING:
                 iModel.setSelectedPos(e.getX(), e.getY());
                 break;
@@ -84,16 +74,14 @@ public class AppController {
 
     public void mouseReleaseCanvas(MouseEvent e) {
         switch (iModel.getInteractionState()) {
-            case PRESSED:
-                iModel.setInteractionState(InteractionState.READY);
-                break;
             case DRAGGING:
-                SMStateNode oldSelected = iModel.getSelectedNode();
-                SMStateNode newSelected = iModel.popNewSelectedNode();
-                smModel.addNode(smModel.anyIntersects(newSelected)
-                                ? oldSelected
-                                : newSelected
-                );
+                SMStateNode oldSelected = iModel.getOldSelectedNode();
+                SMStateNode newSelected = iModel.getNewSelectedNode();
+                if (smModel.anyIntersects((newSelected))) {
+                    iModel.setSelectedNode(oldSelected, 0, 0);
+                } else {
+                    smModel.replaceNode(oldSelected, newSelected);
+                }
                 iModel.setInteractionState(InteractionState.READY);
                 break;
             case PANNING:
@@ -109,7 +97,7 @@ public class AppController {
     }
     private SMStateNode tryAddNode(double x, double y) {
         SMStateNode candidate = new SMStateNode(x, y);
-        if (!(smModel.anyIntersects(candidate)) && (iModel.getSelectedNode() == null || !iModel.getSelectedNode().intersects(candidate))) {
+        if (!(smModel.anyIntersects(candidate))) {
             smModel.addNode(candidate);
             return candidate;
         }

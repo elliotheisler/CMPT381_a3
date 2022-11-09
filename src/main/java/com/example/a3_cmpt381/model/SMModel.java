@@ -22,11 +22,11 @@ public class SMModel extends ModelBase {
         return null;
     }
 
-    public SMStateNode popNode(SMStateNode node) {
-        if (!nodes.contains(node))
-            return null;
-        nodes.remove(node);
-        return node;
+    public boolean replaceNode(SMStateNode oldNode, SMStateNode newNode) {
+        if (!nodes.contains(oldNode))
+            return false;
+        nodes.remove(oldNode);
+        return nodes.add(newNode);
     }
     public boolean addNode(SMStateNode node) {
         boolean res = nodes.add(node);

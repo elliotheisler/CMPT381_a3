@@ -22,8 +22,12 @@ public class InteractionModel extends ModelBase {
 
     private SMStateNode selectedNode;
 
-    public SMStateNode getSelectedNode() {
+    public SMStateNode getOldSelectedNode() {
         return selectedNode;
+    }
+
+    public SMStateNode getNewSelectedNode() {
+        return selectedNode == null ? null : new SMStateNode(getX(), getY());
     }
 
     public void setSelectedNode(SMStateNode selectedNode, double x, double y) {
@@ -35,12 +39,6 @@ public class InteractionModel extends ModelBase {
             initY = y;
             setSelectedPos(x, y);
         }
-    }
-
-    public SMStateNode popNewSelectedNode() {
-        SMStateNode res = new SMStateNode(getX(), getY());
-        this.selectedNode = null;
-        return res;
     }
 
     public CursorMode getCursorMode() {

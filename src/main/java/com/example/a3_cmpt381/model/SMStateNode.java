@@ -5,7 +5,7 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
-public class SMStateNode extends Rectangle2D {
+public class SMStateNode extends SMItem {
     public static final double WIDTH = 40;
     public static final double HEIGHT = 30;
 

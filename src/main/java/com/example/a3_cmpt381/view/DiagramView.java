@@ -54,9 +54,11 @@ public class DiagramView extends StackPane implements ModelListener {
     private void redraw() {
         fillBackground(BACKGROUND_COLOR);
         for (SMStateNode node: smModel.getNodes()) {
-            drawNode(node);
+            if (node == iModel.getOldSelectedNode())
+                drawSelectedNode();
+            else
+                drawNode(node);
         }
-        drawSelectedNode();
     }
 
     public void drawNode(SMStateNode node) {
@@ -72,14 +74,14 @@ public class DiagramView extends StackPane implements ModelListener {
     }
 
     public void drawSelectedNode() {
-        SMStateNode selectedNode = iModel.getSelectedNode();
+        SMStateNode selectedNode = iModel.getNewSelectedNode();
         if (selectedNode == null) {
             return;
         }
         gc.setFill(Color.BEIGE);
         gc.setStroke(Color.RED);
-        double x = iModel.getX();
-        double y = iModel.getY();
+        double x = selectedNode.getMinX();
+        double y = selectedNode.getMinY();
         gc.fillRect(
                 x,
                 y,
