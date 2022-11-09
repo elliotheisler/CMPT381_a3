@@ -28,55 +28,21 @@ public class AppController {
     public void selectLink(ActionEvent e) {
         iModel.setCursorMode(CursorMode.LINK);
     }
-
-    public void mouseDraggedCanvas(MouseEvent e) {
-        switch (iModel.getInteractionState()) {
-            case DRAGGING:
-                iModel.setSelectedPos(
-                        toMiddlePoint(e.getX(), e.getY(), iModel.getSelectedNode())
-                );
-                break;
-            case PANNING:
-                System.out.println("PANNING drag not implemented");
-                break;
-            case LINKING:
-                System.out.println("LINKING drag not implemmented");
-        }
-    }
-
-    public void mouseReleaseCanvas(MouseEvent e) {
-        switch (iModel.getInteractionState()) {
-            case DRAGGING:
-                SMStateNode oldSelected = iModel.getSelectedNode();
-                SMStateNode newSelected = iModel.popNewSelectedNode();
-                smModel.updateNode(oldSelected,
-                        smModel.anyIntersects(newSelected)
-                                ? oldSelected
-                                : newSelected
-                        );
-                iModel.setInteractionState(InteractionState.READY);
-                break;
-            case PANNING:
-                System.out.println("panning release not");
-                break;
-            case LINKING:
-                System.out.println("linking release not");
-        }
-    }
-
+    
     public void mouseClickCanvas(MouseEvent e) {
     }
 
     public void mousePressCanvas(MouseEvent e) {
+        System.out.println("PRESS");
         switch (iModel.getInteractionState()) {
             case READY:
                 switch (iModel.getCursorMode()) {
                     case DRAG:
                         SMStateNode selected = smModel.getNode(e.getX(), e.getY());
                         if (selected == null) {
-                            smModel.tryAddNode(toMiddlePoint(e.getX(), e.getY(), SMStateNode.WIDTH, SMStateNode.HEIGHT));
+                            smModel.tryAddNode(fromMiddlePoint(e.getX(), e.getY(), SMStateNode.WIDTH, SMStateNode.HEIGHT));
                         } else {
-                            iModel.setSelectedNode(selected);
+                            iModel.setSelectedNode(smModel.popNode(selected), e.getX(), e.getY());
                             iModel.setInteractionState(InteractionState.DRAGGING);
                         }
                         break;
@@ -89,10 +55,44 @@ public class AppController {
         }
     }
 
-    private Point2D toMiddlePoint(double x, double y, Rectangle2D r) {
-        return toMiddlePoint(x, y, r.getWidth(), r.getHeight());
+    public void mouseDraggedCanvas(MouseEvent e) {
+        System.out.println("DRAG");
+        switch (iModel.getInteractionState()) {
+            case DRAGGING:
+                iModel.setSelectedPos(e.getX(), e.getY());
+                break;
+            case PANNING:
+                System.out.println("PANNING drag not implemented");
+                break;
+            case LINKING:
+                System.out.println("LINKING drag not implemmented");
+        }
     }
-    private Point2D toMiddlePoint(double x, double y, double width, double height) {
+
+    public void mouseReleaseCanvas(MouseEvent e) {
+        System.out.println("RELEASE");
+        switch (iModel.getInteractionState()) {
+            case DRAGGING:
+                SMStateNode oldSelected = iModel.getSelectedNode();
+                SMStateNode newSelected = iModel.popNewSelectedNode();
+                smModel.addNode(smModel.anyIntersects(newSelected)
+                                ? oldSelected
+                                : newSelected
+                );
+                iModel.setInteractionState(InteractionState.READY);
+                break;
+            case PANNING:
+                System.out.println("panning release not");
+                break;
+            case LINKING:
+                System.out.println("linking release not");
+        }
+    }
+
+    private Point2D fromMiddlePoint(double x, double y, Rectangle2D r) {
+        return fromMiddlePoint(x, y, r.getWidth(), r.getHeight());
+    }
+    private Point2D fromMiddlePoint(double x, double y, double width, double height) {
         return new Point2D(x - width / 2, y - height / 2);
     }
 }

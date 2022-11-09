@@ -6,13 +6,14 @@ import javafx.scene.canvas.GraphicsContext;
 public class InteractionModel extends ModelBase {
 
     // need to store seperate from selectedNode in order to mutate it, since Rectangle2D is immutable
-    private double x, y;
-    public double getX() { return x; }
-    public double getY() { return y; }
-
-    public void setSelectedPos(Point2D p) {
-        setSelectedPos(p.getX(), p.getY());
+    private double x, y, initX, initY;
+    public double getX() {
+        return selectedNode.getMinX() + x - initX;
     }
+    public double getY() {
+        return selectedNode.getMinX() + y - initY;
+    }
+
     public void setSelectedPos(double x, double y) {
         this.x = x;
         this.y = y;
@@ -25,16 +26,19 @@ public class InteractionModel extends ModelBase {
         return selectedNode;
     }
 
-    public void setSelectedNode(SMStateNode selectedNode) {
+    public void setSelectedNode(SMStateNode selectedNode, double x, double y) {
         this.selectedNode = selectedNode;
-        if (selectedNode == null)
+        if (selectedNode == null) {
             notifySubscribers();
-        else
-            setSelectedPos(selectedNode.getMinX(), selectedNode.getMinY());
+        } else {
+            initX = x;
+            initY = y;
+            setSelectedPos(x, y);
+        }
     }
     public SMStateNode popNewSelectedNode() {
         this.selectedNode = null;
-        return new SMStateNode(x, y);
+        return new SMStateNode(getX(), getY());
     }
 
     public CursorMode getCursorMode() {

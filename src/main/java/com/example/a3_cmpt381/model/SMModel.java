@@ -35,12 +35,12 @@ public class SMModel extends ModelBase {
         return null;
     }
 
-    public void updateNode(SMStateNode original, SMStateNode newSelected) {
-        nodes.remove(original);
-        nodes.add(newSelected);
-        notifySubscribers();
+    public SMStateNode popNode(SMStateNode node) {
+        if (!nodes.contains(node))
+            return null;
+        nodes.remove(node);
+        return node;
     }
-
     public boolean addNode(SMStateNode node) {
         boolean res = nodes.add(node);
         notifySubscribers();
