@@ -11,7 +11,7 @@ public class InteractionModel extends ModelBase {
         return selectedNode.getMinX() + x - initX;
     }
     public double getY() {
-        return selectedNode.getMinX() + y - initY;
+        return selectedNode.getMinY() + y - initY;
     }
 
     public void setSelectedPos(double x, double y) {
@@ -37,8 +37,9 @@ public class InteractionModel extends ModelBase {
         }
     }
     public SMStateNode popNewSelectedNode() {
+        SMStateNode res = new SMStateNode(getX(), getY());
         this.selectedNode = null;
-        return new SMStateNode(getX(), getY());
+        return res;
     }
 
     public CursorMode getCursorMode() {

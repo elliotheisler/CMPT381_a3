@@ -33,7 +33,6 @@ public class AppController {
     }
 
     public void mousePressCanvas(MouseEvent e) {
-        System.out.println("PRESS");
         switch (iModel.getInteractionState()) {
             case READY:
                 switch (iModel.getCursorMode()) {
@@ -56,7 +55,6 @@ public class AppController {
     }
 
     public void mouseDraggedCanvas(MouseEvent e) {
-        System.out.println("DRAG");
         switch (iModel.getInteractionState()) {
             case DRAGGING:
                 iModel.setSelectedPos(e.getX(), e.getY());
@@ -70,7 +68,6 @@ public class AppController {
     }
 
     public void mouseReleaseCanvas(MouseEvent e) {
-        System.out.println("RELEASE");
         switch (iModel.getInteractionState()) {
             case DRAGGING:
                 SMStateNode oldSelected = iModel.getSelectedNode();
