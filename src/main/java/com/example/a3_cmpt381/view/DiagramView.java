@@ -59,11 +59,25 @@ public class DiagramView extends StackPane implements ModelListener {
             if (node == iModel.getSelectedNode())
                 drawSelectedNode(gc);
             else
-                node.draw(gc);
+                drawNode(node);
         }
     }
 
+    public void drawNode(SMStateNode node) {
+        gc.setFill(Color.BEIGE);
+        gc.setStroke(Color.BLACK);
+        gc.fillRect(
+                node.getMinX(),
+                node.getMinY(),
+                node.getWidth(),
+                node.getHeight()
+        );
+        gc.strokeText("default", node.getMinX(), node.getMaxY(), getWidth());
+    }
+
     public void drawSelectedNode(GraphicsContext gc) {
+        gc.setFill(Color.BEIGE);
+        gc.setStroke(Color.RED);
         SMStateNode selectedNode = iModel.getSelectedNode();
         double x = iModel.getX();
         double y = iModel.getY();
@@ -79,6 +93,7 @@ public class DiagramView extends StackPane implements ModelListener {
                 selectedNode.getWidth(),
                 selectedNode.getHeight()
         );
+        gc.setStroke(Color.BLACK);
         gc.strokeText("selected", x, y + selectedNode.getHeight(), selectedNode.getWidth());
     }
 

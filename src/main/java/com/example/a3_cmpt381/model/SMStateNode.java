@@ -17,13 +17,4 @@ public class SMStateNode extends Rectangle2D {
         this(point.getX(), point.getY());
     }
 
-    public void draw(GraphicsContext gc) {
-        gc.fillRect(
-                getMinX(),
-                getMinY(),
-                getWidth(),
-                getHeight()
-        );
-        gc.strokeText("default", getMinX(), getMaxY(), getWidth());
-    }
 }
