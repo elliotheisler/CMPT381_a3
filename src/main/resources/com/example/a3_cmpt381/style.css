@@ -1,12 +1,18 @@
 .MainUI * {
     -fx-spacing: 4;
-    -fx-padding: 16;
+    -fx-padding: 0;
     -fx-font-size: 30;
 }
 
 .MainUI {
 }
 
+.ToolPalette .region {
+    -fx-spacing: 8;
+}
 .ToolPalette .button {
--fx-background-color: #70D0E0;
+    -fx-background-color: #70D0E0;
+}
+.ToolPalette .button:hover {
+    -fx-background-color: #80E0F0;
 }

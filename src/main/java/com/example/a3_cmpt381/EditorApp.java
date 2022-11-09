@@ -14,6 +14,7 @@ public class EditorApp extends Application {
     public void start(Stage stage) throws IOException {
         Pane root = new MainUI();
         Scene scene = new Scene(root, 320, 240);
+
         stage.setScene(scene);
         stage.setTitle("Hello!");
         String css = getClass().getResource("style.css").toExternalForm();
