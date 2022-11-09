@@ -22,19 +22,6 @@ public class SMModel extends ModelBase {
         return null;
     }
 
-    public SMStateNode tryAddNode(Point2D p) {
-        return tryAddNode(p.getX(), p.getY());
-    }
-    public SMStateNode tryAddNode(double x, double y) {
-        SMStateNode candidate = new SMStateNode(x, y);
-        if (!anyIntersects(candidate)) {
-            nodes.add(candidate);
-            notifySubscribers();
-            return candidate;
-        }
-        return null;
-    }
-
     public SMStateNode popNode(SMStateNode node) {
         if (!nodes.contains(node))
             return null;

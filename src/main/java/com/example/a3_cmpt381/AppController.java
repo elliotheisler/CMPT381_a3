@@ -38,11 +38,22 @@ public class AppController {
                 switch (iModel.getCursorMode()) {
                     case DRAG:
                         SMStateNode selected = smModel.getNode(e.getX(), e.getY());
+                        /* TODO: change selected behaviour to avoid code like this
+                         * stop popping/pushing selected to/from SMModel
+                         */
                         if (selected == null) {
-                            smModel.tryAddNode(fromMiddlePoint(e.getX(), e.getY(), SMStateNode.WIDTH, SMStateNode.HEIGHT));
+                            selected =
+                                    iModel.getSelectedNode() != null && iModel.getSelectedNode().contains(e.getX(), e.getY())
+                                    ? iModel.getSelectedNode()
+                                    : null;
+                        }
+                        if (selected == null) {
+                            tryAddNode(fromMiddlePoint(e.getX(), e.getY(), SMStateNode.WIDTH, SMStateNode.HEIGHT));
                         } else {
+                            if (iModel.getSelectedNode() != null)
+                                smModel.addNode(iModel.getSelectedNode());
                             iModel.setSelectedNode(smModel.popNode(selected), e.getX(), e.getY());
-                            iModel.setInteractionState(InteractionState.DRAGGING);
+                            iModel.setInteractionState(InteractionState.PRESSED);
                         }
                         break;
                     case PAN:
@@ -56,6 +67,10 @@ public class AppController {
 
     public void mouseDraggedCanvas(MouseEvent e) {
         switch (iModel.getInteractionState()) {
+            case PRESSED:
+                iModel.setSelectedPos(e.getX(), e.getY());
+                iModel.setInteractionState(InteractionState.DRAGGING);
+                break;
             case DRAGGING:
                 iModel.setSelectedPos(e.getX(), e.getY());
                 break;
@@ -69,6 +84,9 @@ public class AppController {
 
     public void mouseReleaseCanvas(MouseEvent e) {
         switch (iModel.getInteractionState()) {
+            case PRESSED:
+                iModel.setInteractionState(InteractionState.READY);
+                break;
             case DRAGGING:
                 SMStateNode oldSelected = iModel.getSelectedNode();
                 SMStateNode newSelected = iModel.popNewSelectedNode();
@@ -84,6 +102,18 @@ public class AppController {
             case LINKING:
                 System.out.println("linking release not");
         }
+    }
+
+    private SMStateNode tryAddNode(Point2D p) {
+        return tryAddNode(p.getX(), p.getY());
+    }
+    private SMStateNode tryAddNode(double x, double y) {
+        SMStateNode candidate = new SMStateNode(x, y);
+        if (!(smModel.anyIntersects(candidate)) && (iModel.getSelectedNode() == null || !iModel.getSelectedNode().intersects(candidate))) {
+            smModel.addNode(candidate);
+            return candidate;
+        }
+        return null;
     }
 
     private Point2D fromMiddlePoint(double x, double y, Rectangle2D r) {

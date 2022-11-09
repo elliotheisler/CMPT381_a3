@@ -36,6 +36,7 @@ public class InteractionModel extends ModelBase {
             setSelectedPos(x, y);
         }
     }
+
     public SMStateNode popNewSelectedNode() {
         SMStateNode res = new SMStateNode(getX(), getY());
         this.selectedNode = null;
