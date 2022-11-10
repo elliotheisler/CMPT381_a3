@@ -26,12 +26,18 @@ public class SMTransitionLink extends SMItem {
     }
 
     public static SMTransitionLink fromSourceDrain(SMStateNode source, SMStateNode drain) {
-        Point2D p = SMItem.getPosBetween(source, drain);
+        Point2D p = getPosBetween(source, drain);
         return new SMTransitionLink(p.getX(), p.getY(), source, drain);
     }
 
-//    public boolean equals(SMTransitionLink other) {
-//        return this.source == other.source &&
-//                this.drain == other.drain;
-//    }
+    /* used to create transition links.
+     * get the corner of a rectangle of this type when it is positioned between the midpoints
+     * of the source and drain
+     */
+    private static Point2D getPosBetween(SMItem source, SMItem drain) {
+        return source.getMidpoint(drain).subtract(new Point2D(
+                WIDTH / 2,
+                HEIGHT / 2
+        ));
+    }
 }

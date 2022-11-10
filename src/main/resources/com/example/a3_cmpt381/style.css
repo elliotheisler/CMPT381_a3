@@ -16,3 +16,7 @@
 .ToolPalette .button:hover {
     -fx-background-color: #80E0F0;
 }
+
+.viewport {
+    -fx-background-color: #E0F0FF
+}

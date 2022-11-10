@@ -33,28 +33,14 @@ public class AppController {
     }
 
     public void mousePressCanvas(MouseEvent e) {
-        SMStateNode selected;
         switch (iModel.getInteractionState()) {
             case READY:
                 switch (iModel.getCursorMode()) {
                     case DRAG:
-                        selected = smModel.getNode(e.getX(), e.getY());
-                        if (selected == null) {
-                            tryAddNode(fromMiddlePoint(e.getX(), e.getY(), SMStateNode.WIDTH, SMStateNode.HEIGHT));
-                        } else {
-                            iModel.setSelectedNode(selected, e.getX(), e.getY());
-                            iModel.setInteractionState(InteractionState.DRAGGING);
-                        }
                         break;
                     case PAN:
-                        System.out.println("panning not implemented");
                         break;
                     case LINK:
-                        selected = smModel.getNode(e.getX(), e.getY());
-                        if (selected != null) {
-                            iModel.setSelectedNode(selected, e.getX(), e.getY());
-                            iModel.setInteractionState(InteractionState.LINKING);
-                        }
                 }
         }
     }
@@ -62,54 +48,21 @@ public class AppController {
     public void mouseDraggedCanvas(MouseEvent e) {
         switch (iModel.getInteractionState()) {
             case DRAGGING:
-                iModel.setCursorPos(e.getX(), e.getY());
                 break;
             case PANNING:
-                System.out.println("PANNING drag not implemented");
                 break;
             case LINKING:
-                iModel.setCursorPos(e.getX(), e.getY());
         }
     }
 
     public void mouseReleaseCanvas(MouseEvent e) {
         switch (iModel.getInteractionState()) {
             case DRAGGING:
-                SMStateNode oldSelected = iModel.getOldSelectedNode();
-                SMStateNode newSelected = iModel.getNewSelectedNode();
-                SMStateNode intersectee = smModel.anyIntersects(newSelected);
-                if (intersectee == oldSelected || intersectee == null) {
-                    smModel.replaceNode(oldSelected, newSelected);
-                } else {
-                    iModel.setSelectedNode(oldSelected, 0, 0);
-                }
-                iModel.setInteractionState(InteractionState.READY);
                 break;
             case PANNING:
-                System.out.println("panning release not");
                 break;
             case LINKING:
-                SMStateNode source = iModel.getOldSelectedNode();
-                SMStateNode drain = smModel.getNode(e.getX(), e.getY());
-                iModel.setInteractionState(InteractionState.READY);
-                if (source == drain) {
-                    System.out.println("transition to self not implemented");
-                } else if (drain != null) {
-                    smModel.addLink(SMTransitionLink.fromSourceDrain(source, drain));
-                }
         }
-    }
-
-    private SMStateNode tryAddNode(Point2D p) {
-        return tryAddNode(p.getX(), p.getY());
-    }
-    private SMStateNode tryAddNode(double x, double y) {
-        SMStateNode candidate = new SMStateNode(x, y);
-        if ((smModel.anyIntersects(candidate) != iModel.getOldSelectedNode()) || iModel.getOldSelectedNode() == null) {
-            smModel.addNode(candidate);
-            return candidate;
-        }
-        return null;
     }
 
     private Point2D fromMiddlePoint(double x, double y, Rectangle2D r) {
