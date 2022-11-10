@@ -2,30 +2,25 @@ package com.example.a3_cmpt381.view;
 
 import com.example.a3_cmpt381.AppController;
 import com.example.a3_cmpt381.model.*;
+import com.example.a3_cmpt381.model.sm_item.SMItem;
+import com.example.a3_cmpt381.model.sm_item.SMStateNode;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-
-import static java.lang.Math.*;
+import java.util.*;
 
 public class DiagramView extends StackPane implements ModelListener {
     public static final double WIDTH = 300;
     public static final double HEIGHT = WIDTH * 2 / 3;
-
-    private Pane viewport;
-
+    
+    private Pane viewport = new Pane();
+    
+    private Map<SMItem, Rectangle> itemProjections = new HashMap();
+    
     private SMModel smModel;
     public void setSMModel(SMModel smModel) {
         this.smModel = smModel;
@@ -44,11 +39,7 @@ public class DiagramView extends StackPane implements ModelListener {
 //    }
 
     public void modelChanged(Class<?> c) {
-        if (c == SMModel.class) {
-            redraw();
-        } else if (c == InteractionModel.class) {
-            redraw();
-        }
+        handleChangedItem();
     }
 
 
@@ -63,16 +54,55 @@ public class DiagramView extends StackPane implements ModelListener {
     public DiagramView() {
         getStyleClass().add("DiagramView");
         viewport.getStyleClass().add("viewport");
+        viewport.setPrefSize(WIDTH, HEIGHT);
         getChildren().add(viewport);
     }
-
-
-    private void redraw() {
+    
+    private void handleChangedItem() {
+        SMItem changedItem = iModel.getChangedItem();
+        Rectangle projection;
+        switch (iModel.getLastChange()) {
+            case UPDATE:
+                projection = itemProjections.get(changedItem);
+                projection.setTranslateX(changedItem.getMinX());
+                projection.setTranslateY(changedItem.getMinY());
+                break;
+            case ADD:
+                projection = rectFromItem(changedItem);
+                itemProjections.put(changedItem, projection);
+                viewport.getChildren().add(projection);
+                break;
+            case DELETE:
+                projection = itemProjections.get(changedItem);
+                itemProjections.remove(changedItem);
+                viewport.getChildren().remove(projection);
+                break;
+        }
+        iModel.setLastChange(ModelChange.NONE);
+    }
+    
+    private static Rectangle rectFromItem(SMItem item) {
+        Rectangle r = new Rectangle(0, 0);
+        r.setTranslateX(item.getMinX());
+        r.setTranslateY(item.getMinY());
+        switch (item.type) {
+            case NODE:
+                r.setWidth(item.getWidth());
+                r.setHeight(item.getHeight());
+                r.setFill(Color.WHITE);
+                r.setStroke(Color.SADDLEBROWN);
+            case LINK:
+                r.setWidth(item.getWidth());
+                r.setHeight(item.getHeight());
+                r.setFill(Color.BEIGE);
+                r.setStroke(Color.SADDLEBROWN);
+        }
+        return r;
     }
 
 
-    /* for rendering of transition arrows. given a slope and a starting point inside a rectangle,
-     * calculate where that line intercepts the rectangular boundary
+    /* for rendering of transition arrows. given a start point, end point, and a rectangle,
+     * calculate where that directed line first intercepts the rectangle.
      */
     private static Intercept getFirstIntercept(Point2D start, Point2D end, Rectangle2D rect) {
         double slope = (end.getY() - start.getY()) / (end.getX() - start.getX());

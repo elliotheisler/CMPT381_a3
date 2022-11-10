@@ -1,7 +1,6 @@
-package com.example.a3_cmpt381.model;
+package com.example.a3_cmpt381.model.sm_item;
 
 import javafx.geometry.Point2D;
-import javafx.geometry.Rectangle2D;
 
 public class SMTransitionLink extends SMItem {
     public static final double WIDTH = 40;
@@ -23,6 +22,7 @@ public class SMTransitionLink extends SMItem {
         super(x, y, WIDTH, HEIGHT);
         this.source = source;
         this.drain = drain;
+        type = SMItemType.LINK;
     }
 
     public static SMTransitionLink fromSourceDrain(SMStateNode source, SMStateNode drain) {

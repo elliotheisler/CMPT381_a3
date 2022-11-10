@@ -1,8 +1,10 @@
-package com.example.a3_cmpt381.model;
+package com.example.a3_cmpt381.model.sm_item;
 
 import javafx.geometry.Point2D;
 
-// the javafx Rectangle2D and Rectangle don't quite do what i want
+// the javafx Rectangle2D and Rectangle classes don't quite do what i want
+// - Rectangle2D is immutable
+// - Rectangle doesn't have all the convenience methods. and it is a scene object.
 public class CustomRectangle {
     private double minX, minY, width, height;
 
@@ -53,18 +55,21 @@ public class CustomRectangle {
         return minY + height;
     }
 
-    public Point2D getMin() {
-        return new Point2D(getMinX(), getMinY());
-    }
-
-    public Point2D getMax() {
-        return new Point2D(getMaxX(), getMaxY());
-    }
-
     public boolean intersects(CustomRectangle other) {
-        return contains(other.getMin()) ||
-                contains(other.getMax()) ||
-                contains(other.getMiddle());
+        return containsOneOf(
+                other.getMin(),
+                other.getMax(),
+                other.getBottomLeft(),
+                other.getTopRight()
+        );
+    }
+
+    public boolean containsOneOf(Point2D... points) {
+        for (Point2D p : points) {
+            if (contains(p))
+                return true;
+        }
+        return false;
     }
 
     public boolean contains(Point2D p) {
@@ -75,8 +80,9 @@ public class CustomRectangle {
                 minY <= y && y <= getMaxY();
     }
 
-    public Point2D getMidpoint(SMItem drain) {
-        return getMiddle().midpoint(drain.getMiddle());
+    // average of middles
+    public Point2D getMidpoint(CustomRectangle end) {
+        return getMiddle().midpoint(end.getMiddle());
     }
 
     public Point2D getMiddle() {
@@ -84,5 +90,26 @@ public class CustomRectangle {
                 getMinX() + getWidth() / 2,
                 getMinY() + getHeight() / 2
         );
+    }
+
+    public void setMin(Point2D p) {
+        this.minX = p.getX();
+        this.minY = p.getY();
+    }
+
+    public Point2D getMin() {
+        return new Point2D(getMinX(), getMinY());
+    }
+
+    public Point2D getMax() {
+        return new Point2D(getMaxX(), getMaxY());
+    }
+
+    public Point2D getTopRight() {
+        return new Point2D(getMaxX(), getMinY());
+    }
+
+    public Point2D getBottomLeft() {
+        return new Point2D(getMinX(), getMaxY());
     }
 }
