@@ -1,5 +1,6 @@
 package com.example.a3_cmpt381.model.sm_item;
 
+import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 
 // the javafx Rectangle2D and Rectangle classes don't quite do what i want
@@ -112,4 +113,5 @@ public class CustomRectangle {
     public Point2D getBottomLeft() {
         return new Point2D(getMinX(), getMaxY());
     }
+
 }

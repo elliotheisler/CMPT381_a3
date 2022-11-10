@@ -6,6 +6,7 @@ import com.example.a3_cmpt381.model.sm_item.SMStateNode;
 import com.example.a3_cmpt381.model.sm_item.SMTransitionLink;
 import javafx.geometry.Point2D;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Collection;
@@ -38,6 +39,13 @@ public class SMModel extends ModelBase {
         }
         return null;
     }
+    public SMStateNode getNode(Point2D p) {
+        for (SMStateNode node : nodes) {
+            if (node.contains(p))
+                return node;
+        }
+        return null;
+    }
 
     public boolean replaceNode(SMStateNode oldNode, SMStateNode newNode) {
         if (!nodes.contains(oldNode))
@@ -66,15 +74,13 @@ public class SMModel extends ModelBase {
         Class<?> c = target.getClass();
         if (c == SMStateNode.class) {
             nodes.remove(target);
-            return target;
         } else if (c == SMTransitionLink.class) {
-            System.out.println("cant select transition links yet");
-            System.exit(1);
+            links.remove(target);
         } else {
             System.out.println("???");
             System.exit(1);
         }
-        return null;
+        return target;
     }
 
     public void push(SMItem target) {
@@ -82,7 +88,7 @@ public class SMModel extends ModelBase {
         if (c == SMStateNode.class) {
             nodes.add((SMStateNode) target);
         } else if (c == SMTransitionLink.class) {
-            System.out.println("cant push transition links yet");
+            links.add((SMTransitionLink) target);
         } else {
             System.out.println("???");
         }
@@ -90,5 +96,23 @@ public class SMModel extends ModelBase {
 
     public boolean contains(SMItem i) {
         return nodes.contains(i) || links.contains(i);
+    }
+
+    public Collection<SMTransitionLink> getOutgoingLinks(SMStateNode node) {
+        Collection<SMTransitionLink> acc = new LinkedList();
+        for (SMTransitionLink link : links) {
+            if (link.getSource() == node)
+                acc.add(link);
+        }
+        return acc;
+    }
+
+    public Collection<SMTransitionLink> getIncomingLinks(SMStateNode node) {
+        Collection<SMTransitionLink> acc = new LinkedList();
+        for (SMTransitionLink link : links) {
+            if (link.getDrain() == node)
+                acc.add(link);
+        }
+        return acc;
     }
 }

@@ -3,10 +3,9 @@ package com.example.a3_cmpt381;
 import com.example.a3_cmpt381.model.*;
 import com.example.a3_cmpt381.model.sm_item.SMItem;
 import com.example.a3_cmpt381.model.sm_item.SMStateNode;
+import com.example.a3_cmpt381.model.sm_item.SMTransitionLink;
 import javafx.event.ActionEvent;
-import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.input.MouseEvent;
 
 public class AppController {
@@ -39,15 +38,16 @@ public class AppController {
         switch (iModel.getInteractionState()) {
             case READY:
                 Point2D cursorPos = new Point2D(e.getX(), e.getY());
-                SMItem selected = smModel.getItem(cursorPos);
+                SMItem selected;
                 switch (iModel.getCursorMode()) {
                     case DRAG:
+                        selected = smModel.getItem(cursorPos);
                         if (selected == null) {
                             Point2D corner = fromMiddlePoint(cursorPos, SMStateNode.WIDTH, SMStateNode.HEIGHT);
                             SMStateNode newNode = new SMStateNode(corner);
                             if (smModel.anyIntersects(newNode))
                                 break;
-                            iModel.setLastChange(ModelChange.ADD, newNode);
+                            iModel.setLastChange(ModelTransition.ADD_NODE, newNode);
                             smModel.addNode(newNode);
                         } else {
                             iModel.setInteractionState(InteractionState.DRAGGING);
@@ -57,7 +57,14 @@ public class AppController {
                     case PAN:
                         break;
                     case LINK:
-
+                        selected = smModel.getNode(cursorPos);
+                        if (selected == null)
+                            break;
+                        iModel.setInteractionState(InteractionState.LINKING);
+                        iModel.linkStart(
+                                selected,
+                                SMTransitionLink.middleToCorner(cursorPos)
+                        );
                 }
         }
     }
@@ -71,10 +78,12 @@ public class AppController {
             case PANNING:
                 break;
             case LINKING:
+                iModel.linkUpdate(cursorPos);
         }
     }
 
     public void mouseReleaseCanvas(MouseEvent e) {
+        Point2D cursorPos = new Point2D(e.getX(), e.getY());
         switch (iModel.getInteractionState()) {
             case DRAGGING:
                 iModel.setInteractionState(InteractionState.READY);
@@ -83,6 +92,8 @@ public class AppController {
             case PANNING:
                 break;
             case LINKING:
+                iModel.setInteractionState(InteractionState.READY);
+                iModel.linkRelease(smModel);
         }
     }
 

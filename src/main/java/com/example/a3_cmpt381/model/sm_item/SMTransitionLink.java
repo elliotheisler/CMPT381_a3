@@ -5,8 +5,6 @@ import javafx.geometry.Point2D;
 public class SMTransitionLink extends SMItem {
     public static final double WIDTH = 40;
     public static final double HEIGHT = 40;
-    public static final double RADIUS = 4; // for rendering only
-
 
     private SMStateNode source;
     public SMStateNode getSource() {
@@ -22,7 +20,7 @@ public class SMTransitionLink extends SMItem {
         super(x, y, WIDTH, HEIGHT);
         this.source = source;
         this.drain = drain;
-        type = SMItemType.LINK;
+//        type = SMItemType.LINK;
     }
 
     public static SMTransitionLink fromSourceDrain(SMStateNode source, SMStateNode drain) {
@@ -39,5 +37,9 @@ public class SMTransitionLink extends SMItem {
                 WIDTH / 2,
                 HEIGHT / 2
         ));
+    }
+
+    protected void setType() {
+        type = SMItemType.LINK;
     }
 }

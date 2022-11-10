@@ -8,7 +8,7 @@ public class SMStateNode extends SMItem {
 
     public SMStateNode(double x, double y) {
         super(x, y, WIDTH, HEIGHT);
-        type = SMItemType.NODE;
+//        type = SMItemType.NODE;
     }
     public SMStateNode(Point2D point) {
         this(point.getX(), point.getY());
@@ -20,5 +20,9 @@ public class SMStateNode extends SMItem {
                 getMinX() + getWidth() / 2,
                 getMinY() + getHeight() / 2
         );
+    }
+
+    protected void setType() {
+        type = SMItemType.NODE;
     }
 }

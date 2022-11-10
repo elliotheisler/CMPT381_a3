@@ -2,13 +2,16 @@ package com.example.a3_cmpt381.view;
 
 import com.example.a3_cmpt381.AppController;
 import com.example.a3_cmpt381.model.*;
+import com.example.a3_cmpt381.model.sm_item.CustomRectangle;
 import com.example.a3_cmpt381.model.sm_item.SMItem;
 import com.example.a3_cmpt381.model.sm_item.SMStateNode;
+import com.example.a3_cmpt381.model.sm_item.SMTransitionLink;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 
 import java.util.*;
@@ -20,6 +23,9 @@ public class DiagramView extends StackPane implements ModelListener {
     private Pane viewport = new Pane();
     
     private Map<SMItem, Rectangle> itemProjections = new HashMap();
+    private Map<SMTransitionLink, Line> sourceArrows = new HashMap();
+    private Map<SMTransitionLink, Line> drainArrows = new HashMap();
+    private Line linkingLine = new Line();
     
     private SMModel smModel;
     public void setSMModel(SMModel smModel) {
@@ -38,10 +44,6 @@ public class DiagramView extends StackPane implements ModelListener {
 //        this.vModel = vModel;
 //    }
 
-    public void modelChanged(Class<?> c) {
-        handleChangedItem();
-    }
-
 
     public void setController(AppController controller) {
         viewport.setOnMousePressed(e -> controller.mousePressCanvas(e));
@@ -55,22 +57,70 @@ public class DiagramView extends StackPane implements ModelListener {
         getStyleClass().add("DiagramView");
         viewport.getStyleClass().add("viewport");
         viewport.setPrefSize(WIDTH, HEIGHT);
+        viewport.getChildren().add(linkingLine);
         getChildren().add(viewport);
     }
     
-    private void handleChangedItem() {
+    public void modelChanged(Class<?> c) {
         SMItem changedItem = iModel.getChangedItem();
+        SMStateNode changedNode;
+        SMTransitionLink changedLink;
         Rectangle projection;
+        Point2D start, middle, end;
         switch (iModel.getLastChange()) {
-            case UPDATE:
+            case SELECT:
                 projection = itemProjections.get(changedItem);
-                projection.setTranslateX(changedItem.getMinX());
-                projection.setTranslateY(changedItem.getMinY());
+//                projection.setStroke
+            case DRAGGING_NODE:
+                changedNode = (SMStateNode) changedItem;
+                updateItemRect(changedNode);
+                updateDrainArrows(smModel.getIncomingLinks(changedNode));
+                updateSourceArrows(smModel.getOutgoingLinks(changedNode));
                 break;
-            case ADD:
+            case DRAGGING_LINK:
+                changedLink = (SMTransitionLink) changedItem;
+                updateItemRect(changedLink);
+                updateDrainArrow(changedLink);
+                updateSourceArrow(changedLink);
+                break;
+            case UPDATE_LINKING:
+                linkingLine.setVisible(true);
+                start = iModel.getSelectedItem().getMiddle();
+                end = iModel.getCursorPos();
+                linkingLine.setStartX(start.getX());
+                linkingLine.setStartY(start.getY());
+                linkingLine.setEndX(end.getX());
+                linkingLine.setEndY(end.getY());
+                break;
+            case ADD_NODE:
                 projection = rectFromItem(changedItem);
                 itemProjections.put(changedItem, projection);
                 viewport.getChildren().add(projection);
+                break;
+            case ADD_LINK:
+                changedLink = (SMTransitionLink) changedItem;
+                projection = rectFromItem(changedItem);
+                itemProjections.put(changedItem, projection);
+                viewport.getChildren().add(projection);
+                start = changedLink.getSource().getMiddle();
+                middle = changedLink.getMiddle();
+                end = changedLink.getDrain().getMiddle();
+                Line sourceArrow = new Line(
+                        start.getX(),
+                        start.getY(),
+                        middle.getX(),
+                        middle.getY()
+                );
+                Line drainArrow = new Line(
+                        middle.getX(),
+                        middle.getY(),
+                        end.getX(),
+                        end.getY()
+                );
+                sourceArrows.put(changedLink, sourceArrow);
+                drainArrows.put(changedLink, drainArrow);
+                viewport.getChildren().addAll(sourceArrow, drainArrow);
+                linkingLine.setVisible(false);
                 break;
             case DELETE:
                 projection = itemProjections.get(changedItem);
@@ -78,7 +128,43 @@ public class DiagramView extends StackPane implements ModelListener {
                 viewport.getChildren().remove(projection);
                 break;
         }
-        iModel.setLastChange(ModelChange.NONE);
+        iModel.setLastChange(ModelTransition.NONE);
+    }
+
+    private void updateItemRect(SMItem item) {
+        Rectangle projection = itemProjections.get(item);
+        projection.setTranslateX(item.getMinX());
+        projection.setTranslateY(item.getMinY());
+    }
+
+    private void updateDrainArrows(Collection<SMTransitionLink> links) {
+        for (SMTransitionLink link : links) {
+            updateDrainArrow(link);
+        }
+    }
+    private void updateDrainArrow(SMTransitionLink link) {
+        Line arrow = drainArrows.get(link);
+        Point2D start = link.getMiddle();
+        Point2D end = link.getDrain().getMiddle();
+        arrow.setStartX(start.getX());
+        arrow.setStartY(start.getY());
+        arrow.setEndX(end.getX());
+        arrow.setEndY(end.getY());
+    }
+
+    private void updateSourceArrows(Collection<SMTransitionLink> links) {
+        for (SMTransitionLink link : links) {
+            updateSourceArrow(link);
+        }
+    }
+    private void updateSourceArrow(SMTransitionLink link) {
+        Line arrow = sourceArrows.get(link);
+        Point2D start = link.getSource().getMiddle();
+        Point2D end = link.getMiddle();
+        arrow.setStartX(start.getX());
+        arrow.setStartY(start.getY());
+        arrow.setEndX(end.getX());
+        arrow.setEndY(end.getY());
     }
     
     private static Rectangle rectFromItem(SMItem item) {
@@ -89,8 +175,9 @@ public class DiagramView extends StackPane implements ModelListener {
             case NODE:
                 r.setWidth(item.getWidth());
                 r.setHeight(item.getHeight());
-                r.setFill(Color.WHITE);
+                r.setFill(Color.BLACK);
                 r.setStroke(Color.SADDLEBROWN);
+                break;
             case LINK:
                 r.setWidth(item.getWidth());
                 r.setHeight(item.getHeight());
