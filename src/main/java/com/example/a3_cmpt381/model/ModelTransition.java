@@ -10,7 +10,7 @@ public enum ModelTransition {
     NONE,
     ADD_NODE,
     ADD_LINK,
-    DELETE,
+    DELETE_NODE,
     SELECT,
     DESELECT,
     DRAGGING_NODE,
