@@ -8,7 +8,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 
-public class EditorView extends StackPane implements ModelListener {
+public class PropertiesView extends StackPane implements ModelListener {
     private static double WIDTH = 250;
 
     InteractionModel iModel;
@@ -26,7 +26,7 @@ public class EditorView extends StackPane implements ModelListener {
     VBox linkPane = createLinkPane();
     VBox blankPane = createBlankPane();
 
-    public EditorView() {
+    public PropertiesView() {
         getChildren().addAll(nodePane, linkPane, blankPane);
         setPrefSize(WIDTH, Double.MAX_VALUE);
         setMinWidth(WIDTH);

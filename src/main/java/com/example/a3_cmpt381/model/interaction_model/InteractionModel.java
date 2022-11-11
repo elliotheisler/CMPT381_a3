@@ -196,4 +196,8 @@ public class InteractionModel extends ModelBase {
     private static double squareDistance(Point2D a, Point2D b) {
         return pow(b.getX() - a.getX(), 2) + pow(b.getY() - a.getY(), 2);
     }
+
+    public Point2D getTranslatePos() {
+        return translatePos;
+    }
 }

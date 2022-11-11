@@ -12,9 +12,9 @@ public class MainUI extends StackPane {
     public MainUI() {
         getStyleClass().add("MainUI");
 
-        DiagramView diagramView = new DiagramView();
         ToolPalette toolPalette = new ToolPalette();
-        EditorView editorView = new EditorView();
+        DiagramView diagramView = new DiagramView();
+        PropertiesView propertiesView = new PropertiesView();
 
         AppController controller = new AppController();
 
@@ -30,21 +30,22 @@ public class MainUI extends StackPane {
         diagramView.setSMModel(smModel);
         diagramView.setIModel(iModel);
 
-        editorView.setController(controller);
-        editorView.setSMModel(smModel);
-        editorView.setIModel(iModel);
+        propertiesView.setController(controller);
+        propertiesView.setSMModel(smModel);
+        propertiesView.setIModel(iModel);
 
         controller.setIModel(iModel);
         controller.setSMModel(smModel);
 
-        iModel.addSubscribers(toolPalette, diagramView, editorView);
+        iModel.addSubscribers(toolPalette, diagramView, propertiesView);
         smModel.addSubscribers(diagramView);
 
+        
         root = new HBox();
-        root.getChildren().addAll(toolPalette, diagramView, editorView);
+        root.getChildren().addAll(toolPalette, diagramView, propertiesView);
         getChildren().add(root);
         diagramView.setViewOrder(1);
-        editorView.setViewOrder(-1);
+        propertiesView.setViewOrder(-1);
     }
 
     public void setController(AppController controller) {
