@@ -38,13 +38,13 @@ public class AppController {
         switch (iModel.getInteractionState()) {
             case READY:
                 Point2D cursorPos = new Point2D(e.getX(), e.getY());
+                Point2D worldPos = iModel.viewportToWorld(cursorPos);
                 SMItem selected;
                 switch (iModel.getCursorMode()) {
                     case DRAG:
-                        selected = smModel.getItem(cursorPos);
+                        selected = smModel.getItem(worldPos);
                         if (selected == null) {
-                            Point2D corner = fromMiddlePoint(cursorPos, SMStateNode.WIDTH, SMStateNode.HEIGHT);
-                            SMStateNode newNode = new SMStateNode(corner);
+                            SMStateNode newNode = new SMStateNode(SMStateNode.middleToCorner(worldPos));
                             if (smModel.anyIntersects(newNode))
                                 break;
                             iModel.setLastChange(ModelTransition.ADD_NODE, newNode);
@@ -55,15 +55,17 @@ public class AppController {
                         }
                         break;
                     case PAN:
+                        iModel.setInteractionState(InteractionState.PANNING);
+                        iModel.panStart(cursorPos);
                         break;
                     case LINK:
-                        selected = smModel.getNode(cursorPos);
+                        selected = smModel.getNode(worldPos);
                         if (selected == null)
                             break;
                         iModel.setInteractionState(InteractionState.LINKING);
                         iModel.linkStart(
                                 selected,
-                                SMTransitionLink.middleToCorner(cursorPos)
+                                cursorPos
                         );
                 }
         }
@@ -76,6 +78,7 @@ public class AppController {
                 iModel.dragUpdate(cursorPos);
                 break;
             case PANNING:
+                iModel.panUpdate(cursorPos);
                 break;
             case LINKING:
                 iModel.linkUpdate(cursorPos);
@@ -90,6 +93,7 @@ public class AppController {
                 iModel.dragRelease(smModel);
                 break;
             case PANNING:
+                iModel.setInteractionState(InteractionState.READY);
                 break;
             case LINKING:
                 iModel.setInteractionState(InteractionState.READY);

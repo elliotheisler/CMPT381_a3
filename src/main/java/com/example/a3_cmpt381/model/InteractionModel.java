@@ -5,12 +5,19 @@ import com.example.a3_cmpt381.model.sm_item.SMItemType;
 import com.example.a3_cmpt381.model.sm_item.SMStateNode;
 import com.example.a3_cmpt381.model.sm_item.SMTransitionLink;
 import javafx.geometry.Point2D;
+import javafx.scene.shape.Polygon;
 
 import static java.lang.Math.pow;
 
 public class InteractionModel extends ModelBase {
     // (square of) radius of mouse movement required before drag initiated
     public static final double DRAG_THRESHOLD = 100;
+    public static final double WIDTH = 1000;
+    public static final double HEIGHT = 800;
+
+
+    // panning
+    Point2D translatePos = new Point2D(0, 0);
 
     // cursor drag state
     private Point2D cursorPos, // current drag position
@@ -26,23 +33,23 @@ public class InteractionModel extends ModelBase {
         return selected;
     }
     
-    public void dragStart(SMModel smModel, SMItem item, Point2D pos) {
+    public void dragStart(SMModel smModel, SMItem item, Point2D newCursorPos) {
         lastChange = ModelTransition.SELECT;
-        changedItem = this.selected = smModel.pop(item);
-        initCursor = cursorPos = pos;
+        changedItem = selected = smModel.pop(item);
+        initCursor = cursorPos = newCursorPos;
         initSelected = item.getMin();
         dragInitiated = false;
         notifySubscribers();
     }
 
-    public void dragUpdate(Point2D pos) {
-        cursorPos = pos;
-        if (dragInitiated || squareDistance(initCursor, pos) >= DRAG_THRESHOLD) {
+    public void dragUpdate(Point2D newCursorPos) {
+        this.cursorPos = newCursorPos;
+        if (dragInitiated || squareDistance(initCursor, newCursorPos) >= DRAG_THRESHOLD) {
             lastChange = (selected.type == SMItemType.NODE)
                     ? ModelTransition.DRAGGING_NODE
                     : ModelTransition.DRAGGING_LINK;
             dragInitiated = true;
-            selected.setMin(pos.subtract(initCursor).add(initSelected));
+            selected.setMin(newCursorPos.subtract(initCursor).add(initSelected));
             notifySubscribers();
         }
     }
@@ -58,29 +65,37 @@ public class InteractionModel extends ModelBase {
         notifySubscribers();
     }
     
-    public void linkStart(SMItem item, Point2D cursorPos) {
+    public void linkStart(SMItem item, Point2D newCursorPos) {
         lastChange = ModelTransition.SELECT;
         changedItem = selected = item;
-        initCursor = this.cursorPos = cursorPos;
-        initSelected = item.getMin();
-        dragInitiated = false;
+        initCursor = cursorPos = newCursorPos;
         notifySubscribers();
     }
     
-    public void linkUpdate(Point2D cursorPos) {
+    public void linkUpdate(Point2D newCursorPos) {
         lastChange = ModelTransition.UPDATE_LINKING;
-        this.cursorPos = cursorPos;
+        this.cursorPos = newCursorPos;
         notifySubscribers();
     }
     
     public void linkRelease(SMModel smModel) {
-        SMStateNode end = smModel.getNode(cursorPos);
+        SMStateNode end = smModel.getNode(viewportToWorld(cursorPos));
         if (end == null)
             return;
         setLastChange(ModelTransition.ADD_LINK);
         SMTransitionLink newLink = SMTransitionLink.fromSourceDrain((SMStateNode) getSelectedItem(), end);
         changedItem = newLink;
         smModel.addLink(newLink);
+    }
+
+    public void panStart(Point2D cursorPos) {
+        initCursor = this.cursorPos = cursorPos;
+    }
+    public void panUpdate(Point2D cursorPos) {
+        lastChange = ModelTransition.UPDATE_PANNING;
+        translatePos = translatePos.add(cursorPos).subtract(this.cursorPos);
+        this.cursorPos = cursorPos;
+        notifySubscribers();
     }
 
     // to notify view. most recently added/updated/deleted
@@ -117,7 +132,13 @@ public class InteractionModel extends ModelBase {
         this.iState = iState;
     }
 
-    
+    public Point2D viewportToWorld(Point2D p) {
+        return p.subtract(translatePos);
+    }
+
+    public Point2D worldToViewport(Point2D p) {
+        return p.add(translatePos);
+    }
     
     private static double squareDistance(Point2D a, Point2D b) {
         return pow(b.getX() - a.getX(), 2) + pow(b.getY() - a.getY(), 2);

@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 
 import static java.lang.Math.*;
 
-public final class InterceptCalc {
+final class InterceptCalc {
     private static class Intercept extends Point2D {
         public Intercept(double x, double y) {
             super(x, y);

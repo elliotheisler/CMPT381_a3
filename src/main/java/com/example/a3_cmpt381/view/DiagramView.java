@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 public class DiagramView extends StackPane implements ModelListener {
     public static final double WIDTH = 800;
     public static final double HEIGHT = WIDTH;
-    
+
     private Pane viewport = new Pane();
     
     private Map<SMItem, Rectangle> itemProjections = new HashMap();
@@ -89,7 +89,7 @@ public class DiagramView extends StackPane implements ModelListener {
                 break;
             case UPDATE_LINKING:
                 linkingArrow.setVisible(true);
-                start = iModel.getSelectedItem().getMiddle();
+                start = iModel.worldToViewport(iModel.getSelectedItem().getMiddle());
                 end = iModel.getCursorPos();
                 linkingArrow.setStartPos(start);
                 linkingArrow.setEndPos(end);
@@ -98,21 +98,26 @@ public class DiagramView extends StackPane implements ModelListener {
                 projection = rectFromItem(changedItem);
                 itemProjections.put(changedItem, projection);
                 viewport.getChildren().add(projection);
+                updateItemRect(changedItem);
                 break;
             case ADD_LINK:
                 changedLink = (SMTransitionLink) changedItem;
+                // add rectangle projection
                 projection = rectFromItem(changedItem);
                 itemProjections.put(changedItem, projection);
                 viewport.getChildren().add(projection);
-
+                updateItemRect(changedLink);
+                // add source arrow
                 Arrow sourceArrow = new Arrow();
-                Arrow drainArrow = new Arrow();
                 sourceArrows.put(changedLink, sourceArrow);
-                drainArrows.put(changedLink, drainArrow);
                 updateSourceArrow(changedLink);
-                updateDrainArrow(changedLink);
+                Arrow drainArrow = new Arrow();
                 viewport.getChildren().addAll(sourceArrow.getShapes());
+                // add drain arrow
+                drainArrows.put(changedLink, drainArrow);
+                updateDrainArrow(changedLink);
                 viewport.getChildren().addAll(drainArrow.getShapes());
+                // linking arrow becomes invisible again
                 linkingArrow.setVisible(false);
                 break;
             case DELETE_NODE:
@@ -125,27 +130,21 @@ public class DiagramView extends StackPane implements ModelListener {
                 deleteLinks(smModel.getIncomingLinks(changedNode));
                 deleteLinks(smModel.getOutgoingLinks(changedNode));
                 break;
+            case UPDATE_PANNING:
+                for (SMItem item : itemProjections.keySet()) {
+                    updateItemRect(item);
+                }
+                updateSourceArrows(smModel.getLinks());
+                updateDrainArrows(smModel.getLinks());
         }
         iModel.setLastChange(ModelTransition.NONE);
-    }
-    
-    private void updateLinkArrows(SMTransitionLink changedLink) {
-        Point2D start, middle, end;
-        start = changedLink.getSource().getMiddle();
-        middle = changedLink.getMiddle();
-        end = changedLink.getDrain().getMiddle();
-
-        Point2D start1, end1, start2, end2;
-        start1 = InterceptCalc.getFirstIntercept(start, middle, changedLink.getSource());
-        end1   = InterceptCalc.getFirstIntercept(start, middle, changedLink);
-        start2 = InterceptCalc.getFirstIntercept(middle, end, changedLink);
-        end2   = InterceptCalc.getFirstIntercept(middle, end, changedLink.getDrain());
     }
 
     private void updateItemRect(SMItem item) {
         Rectangle projection = itemProjections.get(item);
-        projection.setTranslateX(item.getMinX());
-        projection.setTranslateY(item.getMinY());
+        Point2D newCorner = iModel.worldToViewport(item.getMin());
+        projection.setTranslateX(newCorner.getX());
+        projection.setTranslateY(newCorner.getY());
     }
 
     private void updateDrainArrows(Collection<SMTransitionLink> links) {
@@ -159,8 +158,12 @@ public class DiagramView extends StackPane implements ModelListener {
         end = link.getDrain().getMiddle();
 
         Point2D lineStart, lineEnd;
-        lineStart = InterceptCalc.getFirstIntercept(middle, end, link);
-        lineEnd   = InterceptCalc.getFirstIntercept(middle, end, link.getDrain());
+        lineStart = iModel.worldToViewport(
+                InterceptCalc.getFirstIntercept(middle, end, link)
+        );
+        lineEnd   = iModel.worldToViewport(
+                InterceptCalc.getFirstIntercept(middle, end, link.getDrain())
+        );
         Arrow arrow = drainArrows.get(link);
         arrow.setStartPos(lineStart);
         arrow.setEndPos(lineEnd);
@@ -191,8 +194,12 @@ public class DiagramView extends StackPane implements ModelListener {
         middle = link.getMiddle();
 
         Point2D lineStart, lineEnd;
-        lineStart = InterceptCalc.getFirstIntercept(start, middle, link.getSource());
-        lineEnd   = InterceptCalc.getFirstIntercept(start, middle, link);
+        lineStart = iModel.worldToViewport(
+                InterceptCalc.getFirstIntercept(start, middle, link.getSource())
+        );
+        lineEnd   = iModel.worldToViewport(
+                InterceptCalc.getFirstIntercept(start, middle, link)
+        );
         Arrow arrow = sourceArrows.get(link);
         arrow.setStartPos(lineStart);
         arrow.setEndPos(lineEnd);
