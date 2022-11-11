@@ -2,31 +2,35 @@ package com.example.a3_cmpt381.view;
 
 import com.example.a3_cmpt381.AppController;
 import com.example.a3_cmpt381.model.*;
-import com.example.a3_cmpt381.model.sm_item.CustomRectangle;
 import com.example.a3_cmpt381.model.sm_item.SMItem;
 import com.example.a3_cmpt381.model.sm_item.SMStateNode;
 import com.example.a3_cmpt381.model.sm_item.SMTransitionLink;
+import com.example.a3_cmpt381.view.projections.Arrow;
+import com.example.a3_cmpt381.view.projections.ItemProjection;
+import com.example.a3_cmpt381.view.projections.LinkProjection;
+import com.example.a3_cmpt381.view.projections.NodeProjection;
 import javafx.geometry.Point2D;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 public class DiagramView extends StackPane implements ModelListener {
     public static final double WIDTH = 800;
     public static final double HEIGHT = WIDTH;
 
     private Pane viewport = new Pane();
+
+    private Rectangle background = createBackground();
     
-    private Map<SMItem, Rectangle> itemProjections = new HashMap();
+    private Map<SMItem, ItemProjection> itemProjections = new HashMap();
     private Map<SMTransitionLink, Arrow> sourceArrows = new HashMap();
     private Map<SMTransitionLink, Arrow> drainArrows = new HashMap();
+
     private Arrow linkingArrow = new Arrow();
     
     private SMModel smModel;
@@ -60,6 +64,7 @@ public class DiagramView extends StackPane implements ModelListener {
         viewport.getStyleClass().add("viewport");
         viewport.setPrefSize(WIDTH, HEIGHT);
         HBox.setHgrow(this, Priority.ALWAYS);
+        viewport.getChildren().add(background);
         viewport.getChildren().addAll(linkingArrow.getShapes());
         linkingArrow.setVisible(false);
         getChildren().add(viewport);
@@ -69,11 +74,18 @@ public class DiagramView extends StackPane implements ModelListener {
         SMItem changedItem = iModel.getChangedItem();
         SMStateNode changedNode;
         SMTransitionLink changedLink;
-        Rectangle projection;
+        ItemProjection projection;
         Point2D start, middle, end;
         switch (iModel.getLastChange()) {
             case SELECT:
                 projection = itemProjections.get(changedItem);
+                projection.onSelect();
+                break;
+            case DESELECT:
+                if (changedItem == null)
+                    break;
+                projection = itemProjections.get(changedItem);
+                projection.onDeselect();
                 break;
             case DRAGGING_NODE:
                 changedNode = (SMStateNode) changedItem;
@@ -95,7 +107,8 @@ public class DiagramView extends StackPane implements ModelListener {
                 linkingArrow.setEndPos(end);
                 break;
             case ADD_NODE:
-                projection = rectFromItem(changedItem);
+                changedNode = (SMStateNode) changedItem;
+                projection = projectionFromNode(changedNode);
                 itemProjections.put(changedItem, projection);
                 viewport.getChildren().add(projection);
                 updateItemRect(changedItem);
@@ -103,7 +116,7 @@ public class DiagramView extends StackPane implements ModelListener {
             case ADD_LINK:
                 changedLink = (SMTransitionLink) changedItem;
                 // add rectangle projection
-                projection = rectFromItem(changedItem);
+                projection = projectionFromLink(changedLink);
                 itemProjections.put(changedItem, projection);
                 viewport.getChildren().add(projection);
                 updateItemRect(changedLink);
@@ -134,6 +147,7 @@ public class DiagramView extends StackPane implements ModelListener {
                 for (SMItem item : itemProjections.keySet()) {
                     updateItemRect(item);
                 }
+                updateBackground();
                 updateSourceArrows(smModel.getLinks());
                 updateDrainArrows(smModel.getLinks());
         }
@@ -141,10 +155,9 @@ public class DiagramView extends StackPane implements ModelListener {
     }
 
     private void updateItemRect(SMItem item) {
-        Rectangle projection = itemProjections.get(item);
+        ItemProjection projection = itemProjections.get(item);
         Point2D newCorner = iModel.worldToViewport(item.getMin());
-        projection.setTranslateX(newCorner.getX());
-        projection.setTranslateY(newCorner.getY());
+        projection.setPos(newCorner);
     }
 
     private void updateDrainArrows(Collection<SMTransitionLink> links) {
@@ -200,28 +213,40 @@ public class DiagramView extends StackPane implements ModelListener {
         lineEnd   = iModel.worldToViewport(
                 InterceptCalc.getFirstIntercept(start, middle, link)
         );
+        if (lineStart == null || lineEnd == null)
+            return;
         Arrow arrow = sourceArrows.get(link);
         arrow.setStartPos(lineStart);
         arrow.setEndPos(lineEnd);
     }
+
+    private NodeProjection projectionFromNode(SMStateNode node) {
+        NodeProjection projection = new NodeProjection();
+        projection.setPos(iModel.worldToViewport(node.getMin()));
+        return projection;
+    }
     
-    private static Rectangle rectFromItem(SMItem item) {
-        Rectangle r = new Rectangle(0, 0);
-        r.setTranslateX(item.getMinX());
-        r.setTranslateY(item.getMinY());
-        switch (item.type) {
-            case NODE:
-                r.setWidth(item.getWidth());
-                r.setHeight(item.getHeight());
-                r.setFill(Color.BLACK);
-                r.setStroke(Color.SADDLEBROWN);
-                break;
-            case LINK:
-                r.setWidth(item.getWidth());
-                r.setHeight(item.getHeight());
-                r.setFill(Color.BEIGE);
-                r.setStroke(Color.SADDLEBROWN);
-        }
-        return r;
+    private LinkProjection projectionFromLink(SMTransitionLink link) {
+        LinkProjection projection = new LinkProjection();
+        projection.setPos(iModel.worldToViewport(link.getMin()));
+        projection.setEvent(link.getEvent());
+        projection.setContext(link.getContext());
+        projection.setSideEffect(link.getSideEffect());
+        return projection;
+    }
+
+    private Rectangle createBackground() {
+        Rectangle background = new Rectangle();
+        background.getStyleClass().add("world");
+        background.toFront();
+        background.setFill(Color.ALICEBLUE);
+        background.setWidth(SMModel.DIMENSIONS.getX());
+        background.setHeight(SMModel.DIMENSIONS.getY());
+        return background;
+    }
+    private void updateBackground() {
+        Point2D newCorner = iModel.worldToViewport(new Point2D(0, 0));
+        background.setTranslateX(newCorner.getX());
+        background.setTranslateY(newCorner.getY());
     }
 }

@@ -18,6 +18,10 @@ final class InterceptCalc {
 
     private InterceptCalc() {};
 
+    // NOTE: I realize now I could have used Shape.subtract() to generate the intersected lines, but this
+    // was an interesting challenge.
+
+
     /* for rendering of transition arrows. given a start point, end point, and a rectangle,
      * calculate where that directed line first intercepts the rectangle.
      */
@@ -47,7 +51,7 @@ final class InterceptCalc {
         return Stream.concat(verticalIntercepts, horizontalIntercepts);
 
     }
-
+    // postcondition: intercepts are sorted by min to max Y
     private static Stream<Intercept> getHorizontalIntercepts(double slope, double yIntercept, CustomRectangle rect) {
         Collection<Intercept> intercepts = new ArrayList(2);
         intercepts.add(getHorizontalIntercept(slope, yIntercept, rect.getMinY()));

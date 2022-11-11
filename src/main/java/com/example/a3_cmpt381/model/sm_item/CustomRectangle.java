@@ -5,7 +5,8 @@ import javafx.geometry.Point2D;
 
 // the javafx Rectangle2D and Rectangle classes don't quite do what i want
 // - Rectangle2D is immutable
-// - Rectangle doesn't have all the convenience methods. and it is a scene object.
+// - Rectangle doesn't have all the convenience methods.
+//   also it is a scene graph object and this is the model.
 public class CustomRectangle {
     private double minX, minY, width, height;
 
@@ -62,6 +63,11 @@ public class CustomRectangle {
                 other.getMax(),
                 other.getBottomLeft(),
                 other.getTopRight()
+        ) || other.containsOneOf(
+                getMin(),
+                getMax(),
+                getBottomLeft(),
+                getTopRight()
         );
     }
 

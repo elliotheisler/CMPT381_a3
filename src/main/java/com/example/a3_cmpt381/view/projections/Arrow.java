@@ -1,4 +1,4 @@
-package com.example.a3_cmpt381.view;
+package com.example.a3_cmpt381.view.projections;
 
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
@@ -7,6 +7,7 @@ import javafx.scene.shape.*;
 
 import static java.lang.Math.*;
 
+// could have done this with Shape.add() probably
 public class Arrow {
     private static final double HEAD_LENGTH = 20;
     private static final double HEAD_WIDTH = 12;

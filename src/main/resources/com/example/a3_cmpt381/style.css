@@ -1,14 +1,19 @@
-.MainUI * {
+* {
     -fx-spacing: 4;
     -fx-padding: 0;
     -fx-font-size: 30;
 }
 
 .MainUI {
+    -fx-background-color: #808080;
 }
 
+.ToolPalette {
+    -fx-background-color: #90A0B0;
+}
 .ToolPalette .region {
     -fx-spacing: 8;
+    -fx-padding: 8;
 }
 .ToolPalette .button {
     -fx-background-color: #70D0E0;
@@ -18,5 +23,23 @@
 }
 
 .viewport {
-    -fx-background-color: #E0F0FF
+    -fx-background-color: #B0C0D0;
+}
+
+.world {
+    -fx-background-color: #E0F0FF;
+}
+
+.link_header {
+    -fx-font: italic 12px monospace;
+}
+
+.link_body {
+    -fx-font: 10px monospace;
+}
+
+.link_textbox {
+    -fx-spacing: 2;
+    -fx-padding: 2;
+    -fx-border-color: #AA6644;
 }

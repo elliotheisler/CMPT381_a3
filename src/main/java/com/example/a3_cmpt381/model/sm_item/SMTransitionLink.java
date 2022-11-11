@@ -3,8 +3,38 @@ package com.example.a3_cmpt381.model.sm_item;
 import javafx.geometry.Point2D;
 
 public class SMTransitionLink extends SMItem {
-    public static final double WIDTH = 40;
-    public static final double HEIGHT = 40;
+    public static final double WIDTH = SMStateNode.WIDTH * 1.5;
+    public static final double HEIGHT = SMStateNode.WIDTH * 2;
+
+    private String
+            event = "",
+            context = "",
+            sideEffect = "";
+
+    public String getEvent() {
+        return event;
+    }
+
+    public void setEvent(String event) {
+        this.event = event;
+    }
+
+    public String getContext() {
+        return context;
+    }
+
+    public void setContext(String context) {
+        this.context = context;
+    }
+
+    public String getSideEffect() {
+        return sideEffect;
+    }
+
+    public void setSideEffect(String sideEffect) {
+        this.sideEffect = sideEffect;
+    }
+
 
     private SMStateNode source;
     public SMStateNode getSource() {

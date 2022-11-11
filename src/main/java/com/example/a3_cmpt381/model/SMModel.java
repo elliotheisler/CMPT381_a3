@@ -12,6 +12,12 @@ import java.util.LinkedList;
 import java.util.Collection;
 
 public class SMModel extends ModelBase {
+    // can make this public since it is immutable anyway
+    public static final Point2D DIMENSIONS = new Point2D(
+            800,
+            800
+    );
+
     private Collection<SMStateNode> nodes = new HashSet();
     public Collection<SMStateNode> getNodes() {
         return nodes;

@@ -34,6 +34,7 @@ public class InteractionModel extends ModelBase {
     }
     
     public void dragStart(SMModel smModel, SMItem item, Point2D newCursorPos) {
+        deselect();
         lastChange = ModelTransition.SELECT;
         changedItem = selected = smModel.pop(item);
         initCursor = cursorPos = newCursorPos;
@@ -66,7 +67,8 @@ public class InteractionModel extends ModelBase {
     }
     
     public void linkStart(SMItem item, Point2D newCursorPos) {
-        lastChange = ModelTransition.SELECT;
+        deselect();
+        // initiate linking
         changedItem = selected = item;
         initCursor = cursorPos = newCursorPos;
         notifySubscribers();
@@ -91,10 +93,17 @@ public class InteractionModel extends ModelBase {
     public void panStart(Point2D cursorPos) {
         initCursor = this.cursorPos = cursorPos;
     }
+
     public void panUpdate(Point2D cursorPos) {
         lastChange = ModelTransition.UPDATE_PANNING;
         translatePos = translatePos.add(cursorPos).subtract(this.cursorPos);
         this.cursorPos = cursorPos;
+        notifySubscribers();
+    }
+
+    public void deselect() {
+        lastChange = ModelTransition.DESELECT;
+        changedItem = selected;
         notifySubscribers();
     }
 
@@ -133,11 +142,11 @@ public class InteractionModel extends ModelBase {
     }
 
     public Point2D viewportToWorld(Point2D p) {
-        return p.subtract(translatePos);
+        return p == null ? null : p.subtract(translatePos);
     }
 
     public Point2D worldToViewport(Point2D p) {
-        return p.add(translatePos);
+        return p == null ? null : p.add(translatePos);
     }
     
     private static double squareDistance(Point2D a, Point2D b) {

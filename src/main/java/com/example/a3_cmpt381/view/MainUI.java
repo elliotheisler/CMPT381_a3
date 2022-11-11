@@ -7,10 +7,13 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 
 public class MainUI extends StackPane {
+    private HBox root;
+
     public MainUI() {
         getStyleClass().add("MainUI");
-        ToolPalette toolPalette = new ToolPalette();
+
         DiagramView diagramView = new DiagramView();
+        ToolPalette toolPalette = new ToolPalette();
 
         AppController controller = new AppController();
 
@@ -30,8 +33,9 @@ public class MainUI extends StackPane {
         iModel.addSubscribers(toolPalette, diagramView);
         smModel.addSubscribers(diagramView);
 
-        HBox root = new HBox();
+        root = new HBox();
         root.getChildren().addAll(toolPalette, diagramView);
         getChildren().add(root);
+        diagramView.setViewOrder(1);
     }
 }

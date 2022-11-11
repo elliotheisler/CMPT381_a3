@@ -47,6 +47,7 @@ public class AppController {
                             SMStateNode newNode = new SMStateNode(SMStateNode.middleToCorner(worldPos));
                             if (smModel.anyIntersects(newNode))
                                 break;
+                            iModel.deselect();
                             iModel.setLastChange(ModelTransition.ADD_NODE, newNode);
                             smModel.addNode(newNode);
                         } else {

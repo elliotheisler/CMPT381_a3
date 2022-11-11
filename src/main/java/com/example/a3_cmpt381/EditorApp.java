@@ -13,7 +13,7 @@ public class EditorApp extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         Pane root = new MainUI();
-        Scene scene = new Scene(root, 320, 240);
+        Scene scene = new Scene(root, 1000, 900);
 
         stage.setScene(scene);
         stage.setTitle("Hello!");
