@@ -104,32 +104,41 @@ public class SMModel extends ModelBase {
         return nodes.contains(i) || links.contains(i);
     }
 
+    // these two methods exist due to refactoring.
+    // it used to iterate over all links and compare source/drain
     public Collection<SMTransitionLink> getOutgoingLinks(SMStateNode node) {
-        Collection<SMTransitionLink> acc = new LinkedList();
-        for (SMTransitionLink link : links) {
-            if (link.getSource() == node)
-                acc.add(link);
-        }
-        return acc;
+        return node.getOutgoing();
     }
 
     public Collection<SMTransitionLink> getIncomingLinks(SMStateNode node) {
-        Collection<SMTransitionLink> acc = new LinkedList();
-        for (SMTransitionLink link : links) {
-            if (link.getDrain() == node)
-                acc.add(link);
-        }
-        return acc;
+        return node.getIncoming();
     }
 
-    public void delItem(SMItem target) {
+    public void deleteItem(SMItem target, Collection<SMTransitionLink> garbage) {
         switch (target.TYPE) {
             case NODE:
-                nodes.remove(target);
-                break;
+                deleteNode((SMStateNode) target, garbage); break;
             case LINK:
-                links.remove(target);
+                deleteLink((SMTransitionLink) target);
+
         }
         notifySubscribers();
+        garbage.clear();
+    }
+
+    public Collection<SMTransitionLink> deleteNode(SMStateNode node, Collection<SMTransitionLink> garbage) {
+        nodes.remove(node);
+        // sever ties between adjacent links to adjacent nodes
+        node.getOutgoing().forEach(trash -> garbage.add(trash));
+        node.getIncoming().forEach(trash -> garbage.add(trash));
+        garbage.forEach(trash -> deleteLink(trash));
+        return garbage;
+    }
+
+    public void deleteLink(SMTransitionLink link) {
+        links.remove(link);
+        // sever ties at both ends
+        link.getDrain().removeIncoming(link);
+        link.getSource().removeOutgoing(link);
     }
 }

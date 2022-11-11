@@ -14,6 +14,8 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 
+import java.security.Key;
+
 public class AppController {
     private SMModel smModel;
     public void setSMModel(SMModel smModel) {
@@ -58,13 +60,16 @@ public class AppController {
                         selected = smModel.getItem(worldPos);
                         if (selected == null)
                             break;
-                        iModel.select(selected);
-                        iModel.deselect();
-                        iModel.setLastChange(ModelTransition.DELETE, selected);
-                        smModel.delItem(selected);
-                        iModel.setLastChange(ModelTransition.NONE);
+                        deleteItem(selected);
                 }
         }
+    }
+
+    public void deleteItem(SMItem selected) {
+        iModel.deselect();
+        iModel.setLastChange(ModelTransition.DELETE, selected);
+        smModel.deleteItem(selected, iModel.getDeletedLinks());
+        iModel.setLastChange(ModelTransition.NONE);
     }
 
     public void primaryPressCanvas(MouseEvent e) {
@@ -139,6 +144,12 @@ public class AppController {
     }
 
 
+    public void anyKeyPress(KeyEvent e) {
+        // delete key == BACK_SPACE on mac
+        if (e.getCode().equals(KeyCode.DELETE) || e.getCode().equals(KeyCode.BACK_SPACE)) {
+            deleteItem(iModel.getSelectedItem());
+        }
+    }
     public void textViewKeyPress(KeyEvent e, EditorText updatedText) {
         if (e.getCode().compareTo(KeyCode.ENTER) == 0)
             updateText(updatedText);

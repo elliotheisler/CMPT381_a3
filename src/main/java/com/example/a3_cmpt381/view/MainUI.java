@@ -24,6 +24,8 @@ public class MainUI extends StackPane {
         toolPalette.setController(controller);
         toolPalette.setIModel(iModel);
 
+        setController(controller);
+
         diagramView.setController(controller);
         diagramView.setSMModel(smModel);
         diagramView.setIModel(iModel);
@@ -43,5 +45,9 @@ public class MainUI extends StackPane {
         getChildren().add(root);
         diagramView.setViewOrder(1);
         editorView.setViewOrder(-1);
+    }
+
+    public void setController(AppController controller) {
+        setOnKeyPressed(controller::anyKeyPress);
     }
 }

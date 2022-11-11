@@ -269,17 +269,19 @@ public class DiagramView extends StackPane implements ModelListener {
     private void deleteItem(SMItem changedItem) {
         switch (changedItem.TYPE) {
             case NODE:
-                ItemProjection projection = itemProjections.get(changedItem);
-                // delete projection of this node
-                itemProjections.remove(changedItem);
-                // delete projections of links to/from this node
-                SMStateNode changedNode = (SMStateNode) changedItem;
-                deleteLinks(smModel.getIncomingLinks(changedNode));
-                deleteLinks(smModel.getOutgoingLinks(changedNode));
-                viewport.getChildren().remove(projection);
+                deleteNode((SMStateNode) changedItem);
                 break;
             case LINK:
                 deleteLink((SMTransitionLink) changedItem);
         }
+    }
+
+    private void deleteNode(SMStateNode node) {
+        ItemProjection projection = itemProjections.get(node);
+        // delete projection of this node
+        itemProjections.remove(node);
+        viewport.getChildren().remove(projection);
+        // delete adjacent links
+        deleteLinks(iModel.getDeletedLinks());
     }
 }

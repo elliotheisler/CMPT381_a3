@@ -9,6 +9,9 @@ import com.example.a3_cmpt381.model.sm_item.SMTransitionLink;
 import com.example.a3_cmpt381.view.EditorText;
 import javafx.geometry.Point2D;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import static java.lang.Math.pow;
 
 public class InteractionModel extends ModelBase {
@@ -28,6 +31,11 @@ public class InteractionModel extends ModelBase {
     private boolean dragInitiated;
     public Point2D getCursorPos() {
         return cursorPos;
+    }
+
+    private Collection<SMTransitionLink> deletedLinks = new ArrayList(10);
+    public Collection<SMTransitionLink> getDeletedLinks() {
+        return deletedLinks;
     }
 
     private SMItem selected;
@@ -90,10 +98,14 @@ public class InteractionModel extends ModelBase {
             notifySubscribers();
             return;
         }
-        SMTransitionLink newLink = SMTransitionLink.fromSourceDrain((SMStateNode) getSelectedItem(), end);
+
+        SMStateNode start = (SMStateNode) getSelectedItem();
+        SMTransitionLink newLink = SMTransitionLink.fromSourceDrain(start, end);
+        start.addOutgoing(newLink);
+        end.addIncoming(newLink);
         changedItem = newLink;
         smModel.addLink(newLink);
-        lastChange = ModelTransition.NONE;
+        deselect();
     }
 
     public void panStart(Point2D cursorPos) {
