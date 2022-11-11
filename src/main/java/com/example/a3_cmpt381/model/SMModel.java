@@ -121,4 +121,15 @@ public class SMModel extends ModelBase {
         }
         return acc;
     }
+
+    public void delItem(SMItem target) {
+        switch (target.TYPE) {
+            case NODE:
+                nodes.remove(target);
+                break;
+            case LINK:
+                links.remove(target);
+        }
+        notifySubscribers();
+    }
 }

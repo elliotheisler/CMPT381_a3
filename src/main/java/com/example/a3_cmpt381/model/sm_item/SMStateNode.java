@@ -6,9 +6,18 @@ public class SMStateNode extends SMItem {
     public static final double WIDTH = 80;
     public static final double HEIGHT = 60;
 
+    private String name = "";
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+
+
     public SMStateNode(double x, double y) {
         super(x, y, WIDTH, HEIGHT);
-//        type = SMItemType.NODE;
+//        TYPE = SMItemType.NODE;
     }
     public SMStateNode(Point2D point) {
         this(point.getX(), point.getY());
@@ -23,6 +32,6 @@ public class SMStateNode extends SMItem {
     }
 
     protected void setType() {
-        type = SMItemType.NODE;
+        TYPE = SMItemType.NODE;
     }
 }

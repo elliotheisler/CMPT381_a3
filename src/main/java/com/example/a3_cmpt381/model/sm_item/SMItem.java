@@ -8,8 +8,8 @@ public abstract class SMItem extends CustomRectangle {
     public static final double WIDTH = 0;
     public static final double HEIGHT = 0;
     // like tagged-unions, but (a bit) safer
-    // hacky way to make SMItem a sum type of nodes and links
-    public SMItemType type;
+    // hacky way to make SMItem a sum TYPE of nodes and links
+    public SMItemType TYPE;
     protected abstract void setType();
 
     public SMItem(double v, double v1, double v2, double v3) {
@@ -17,7 +17,7 @@ public abstract class SMItem extends CustomRectangle {
         setType();
     }
 
-    public static Point2D middleToCorner(Point2D middle) {
-        return middle.subtract(new Point2D(WIDTH / 2, HEIGHT / 2));
+    public Point2D middleToCorner(Point2D middle) {
+        return middle.subtract(new Point2D(getWidth() / 2, getHeight() / 2));
     }
 }

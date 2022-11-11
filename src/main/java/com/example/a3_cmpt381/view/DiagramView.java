@@ -2,6 +2,7 @@ package com.example.a3_cmpt381.view;
 
 import com.example.a3_cmpt381.AppController;
 import com.example.a3_cmpt381.model.*;
+import com.example.a3_cmpt381.model.interaction_model.InteractionModel;
 import com.example.a3_cmpt381.model.sm_item.SMItem;
 import com.example.a3_cmpt381.model.sm_item.SMStateNode;
 import com.example.a3_cmpt381.model.sm_item.SMTransitionLink;
@@ -113,7 +114,11 @@ public class DiagramView extends StackPane implements ModelListener {
                 viewport.getChildren().add(projection);
                 updateItemRect(changedItem);
                 break;
-            case ADD_LINK:
+            case END_LINKING:
+                // linking arrow becomes invisible again
+                linkingArrow.setVisible(false);
+                if (changedItem == null)
+                    break;
                 changedLink = (SMTransitionLink) changedItem;
                 // add rectangle projection
                 projection = projectionFromLink(changedLink);
@@ -130,18 +135,9 @@ public class DiagramView extends StackPane implements ModelListener {
                 drainArrows.put(changedLink, drainArrow);
                 updateDrainArrow(changedLink);
                 viewport.getChildren().addAll(drainArrow.getShapes());
-                // linking arrow becomes invisible again
-                linkingArrow.setVisible(false);
                 break;
-            case DELETE_NODE:
-                changedNode = (SMStateNode) changedItem;
-                // delete view of this node
-                projection = itemProjections.get(changedItem);
-                itemProjections.remove(changedItem);
-                viewport.getChildren().remove(projection);
-                // delete views of links to this node
-                deleteLinks(smModel.getIncomingLinks(changedNode));
-                deleteLinks(smModel.getOutgoingLinks(changedNode));
+            case DELETE:
+                deleteItem(changedItem);
                 break;
             case UPDATE_PANNING:
                 for (SMItem item : itemProjections.keySet()) {
@@ -150,8 +146,11 @@ public class DiagramView extends StackPane implements ModelListener {
                 updateBackground();
                 updateSourceArrows(smModel.getLinks());
                 updateDrainArrows(smModel.getLinks());
+                break;
+            case UPDATE_TEXT:
+                updateItemText(changedItem);
+                break;
         }
-        iModel.setLastChange(ModelTransition.NONE);
     }
 
     private void updateItemRect(SMItem item) {
@@ -177,6 +176,8 @@ public class DiagramView extends StackPane implements ModelListener {
         lineEnd   = iModel.worldToViewport(
                 InterceptCalc.getFirstIntercept(middle, end, link.getDrain())
         );
+        if (lineStart == null || lineEnd == null)
+            return;
         Arrow arrow = drainArrows.get(link);
         arrow.setStartPos(lineStart);
         arrow.setEndPos(lineEnd);
@@ -234,19 +235,51 @@ public class DiagramView extends StackPane implements ModelListener {
         projection.setSideEffect(link.getSideEffect());
         return projection;
     }
+    
+    private void updateItemText(SMItem item) {
+        switch (item.TYPE) {
+            case NODE:
+                SMStateNode node = (SMStateNode) item;
+                NodeProjection projectionNode = (NodeProjection) itemProjections.get(node);
+                projectionNode.updateText(node);
+                break;
+            case LINK:
+                SMTransitionLink link = (SMTransitionLink) item;
+                LinkProjection projectionLink = (LinkProjection) itemProjections.get(link);
+                projectionLink.updateText(link);
+        }
+    }
 
     private Rectangle createBackground() {
         Rectangle background = new Rectangle();
         background.getStyleClass().add("world");
         background.toFront();
-        background.setFill(Color.ALICEBLUE);
+        background.setFill(Color.WHITESMOKE);
         background.setWidth(SMModel.DIMENSIONS.getX());
         background.setHeight(SMModel.DIMENSIONS.getY());
         return background;
     }
+    
     private void updateBackground() {
         Point2D newCorner = iModel.worldToViewport(new Point2D(0, 0));
         background.setTranslateX(newCorner.getX());
         background.setTranslateY(newCorner.getY());
+    }
+
+    private void deleteItem(SMItem changedItem) {
+        switch (changedItem.TYPE) {
+            case NODE:
+                ItemProjection projection = itemProjections.get(changedItem);
+                // delete projection of this node
+                itemProjections.remove(changedItem);
+                // delete projections of links to/from this node
+                SMStateNode changedNode = (SMStateNode) changedItem;
+                deleteLinks(smModel.getIncomingLinks(changedNode));
+                deleteLinks(smModel.getOutgoingLinks(changedNode));
+                viewport.getChildren().remove(projection);
+                break;
+            case LINK:
+                deleteLink((SMTransitionLink) changedItem);
+        }
     }
 }

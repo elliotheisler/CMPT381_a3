@@ -1,7 +1,7 @@
 * {
-    -fx-spacing: 4;
+    -fx-spacing: 0;
     -fx-padding: 0;
-    -fx-font-size: 30;
+    -fx-font-size: 16;
 }
 
 .MainUI {
@@ -26,10 +26,6 @@
     -fx-background-color: #B0C0D0;
 }
 
-.world {
-    -fx-background-color: #E0F0FF;
-}
-
 .link_header {
     -fx-font: italic 12px monospace;
 }
@@ -38,8 +34,31 @@
     -fx-font: 10px monospace;
 }
 
+.node_body {
+    -fx-font: bold 10px monospace;
+    -fx-text-alignment: center;
+}
+
 .link_textbox {
     -fx-spacing: 2;
     -fx-padding: 2;
     -fx-border-color: #AA6644;
+}
+
+.editor_pane {
+    -fx-background-color: #90A0B0;
+    -fx-padding: 8;
+    -fx-spacing: 8;
+}
+.editor_title {
+    -fx-background-color: #D0E0E0;
+    -fx-font: 20 arial;
+    -fx-padding: 8;
+}
+.editor_header {
+    -fx-font-family: Arial;
+}
+
+.editor_pane .button {
+    -fx-padding: 4;
 }

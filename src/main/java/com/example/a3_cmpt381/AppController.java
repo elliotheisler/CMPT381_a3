@@ -1,11 +1,17 @@
 package com.example.a3_cmpt381;
 
 import com.example.a3_cmpt381.model.*;
+import com.example.a3_cmpt381.model.interaction_model.CursorMode;
+import com.example.a3_cmpt381.model.interaction_model.InteractionModel;
+import com.example.a3_cmpt381.model.interaction_model.InteractionState;
+import com.example.a3_cmpt381.model.interaction_model.ModelTransition;
 import com.example.a3_cmpt381.model.sm_item.SMItem;
 import com.example.a3_cmpt381.model.sm_item.SMStateNode;
-import com.example.a3_cmpt381.model.sm_item.SMTransitionLink;
+import com.example.a3_cmpt381.view.EditorText;
 import javafx.event.ActionEvent;
 import javafx.geometry.Point2D;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 
 public class AppController {
@@ -35,6 +41,33 @@ public class AppController {
     }
 
     public void mousePressCanvas(MouseEvent e) {
+        switch (e.getButton()) {
+            case PRIMARY: primaryPressCanvas(e); break;
+            case SECONDARY: secondaryPressCanvas(e);
+        }
+    }
+
+    public void secondaryPressCanvas(MouseEvent e) {
+        switch (iModel.getInteractionState()) {
+            case READY:
+                Point2D cursorPos = new Point2D(e.getX(), e.getY());
+                Point2D worldPos = iModel.viewportToWorld(cursorPos);
+                SMItem selected;
+                switch (iModel.getCursorMode()) {
+                    case DRAG:
+                        selected = smModel.getItem(worldPos);
+                        if (selected == null)
+                            break;
+                        iModel.select(selected);
+                        iModel.deselect();
+                        iModel.setLastChange(ModelTransition.DELETE, selected);
+                        smModel.delItem(selected);
+                        iModel.setLastChange(ModelTransition.NONE);
+                }
+        }
+    }
+
+    public void primaryPressCanvas(MouseEvent e) {
         switch (iModel.getInteractionState()) {
             case READY:
                 Point2D cursorPos = new Point2D(e.getX(), e.getY());
@@ -44,12 +77,15 @@ public class AppController {
                     case DRAG:
                         selected = smModel.getItem(worldPos);
                         if (selected == null) {
-                            SMStateNode newNode = new SMStateNode(SMStateNode.middleToCorner(worldPos));
+                            SMStateNode newNode = new SMStateNode(worldPos);
+                            // make it centered on cursor
+                            newNode.setMin(newNode.middleToCorner(newNode.getMin()));
                             if (smModel.anyIntersects(newNode))
                                 break;
-                            iModel.deselect();
                             iModel.setLastChange(ModelTransition.ADD_NODE, newNode);
                             smModel.addNode(newNode);
+                            iModel.deselect();
+                            iModel.select(newNode);
                         } else {
                             iModel.setInteractionState(InteractionState.DRAGGING);
                             iModel.dragStart(smModel, selected, cursorPos);
@@ -100,6 +136,15 @@ public class AppController {
                 iModel.setInteractionState(InteractionState.READY);
                 iModel.linkRelease(smModel);
         }
+    }
+
+
+    public void textViewKeyPress(KeyEvent e, EditorText updatedText) {
+        if (e.getCode().compareTo(KeyCode.ENTER) == 0)
+            updateText(updatedText);
+    }
+    public void updateText(EditorText updatedText) {
+        iModel.updateText(updatedText);
     }
 
     private Point2D fromMiddlePoint(Point2D p, double width , double height) {

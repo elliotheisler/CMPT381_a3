@@ -1,5 +1,6 @@
 package com.example.a3_cmpt381.view.projections;
 
+import com.example.a3_cmpt381.model.sm_item.SMItem;
 import com.example.a3_cmpt381.model.sm_item.SMTransitionLink;
 import javafx.geometry.Point2D;
 import javafx.scene.control.Label;
@@ -28,8 +29,7 @@ public class LinkProjection extends ItemProjection {
 
     public LinkProjection() {
         super();
-        VBox textBox = new VBox(
-        );
+        VBox textBox = new VBox();
         textBox.setMaxSize(
                 SMTransitionLink.WIDTH - RADIUS - 2,
                 SMTransitionLink.HEIGHT - RADIUS - 2
@@ -37,6 +37,10 @@ public class LinkProjection extends ItemProjection {
         event = createBody(textBox);
         context = createBody(textBox);
         sideEffect = createBody(textBox);
+
+        setEvent(null);
+        setContext(null);
+        setSideEffect(null);
 
         textBox.getChildren().addAll(
                 eventHeader, event,
@@ -59,14 +63,6 @@ public class LinkProjection extends ItemProjection {
         setText(this.sideEffect, sideEffect, "No Side Effect");
     }
 
-    private static void setText(Label t, String s, String defaultS) {
-        if (s.equals("") || s == null) {
-            t.setText(defaultS);
-        } else {
-            t.setText(s);
-        }
-    }
-
     public Rectangle createRect() {
         Rectangle rect = new Rectangle(0, 0, SMTransitionLink.WIDTH, SMTransitionLink.HEIGHT);
         rect.setFill(Color.BEIGE);
@@ -83,18 +79,22 @@ public class LinkProjection extends ItemProjection {
         t.setMaxHeight(SMTransitionLink.HEIGHT - RADIUS - 2);
         return t;
     }
-    public static Label createBody(VBox vBox) {
-        Label t = new Label();
-        t.getStyleClass().add("link_body");
-        t.maxWidthProperty().bind(vBox.maxWidthProperty());
-        t.maxHeightProperty().bind(vBox.maxHeightProperty());
-        t.setWrapText(true);
-        return t;
+
+    public void updateText(SMTransitionLink link) {
+        setEvent(link.getEvent());
+        setContext(link.getContext());
+        setSideEffect(link.getSideEffect());
     }
 
     public void onDeselect() {
         rect.setStroke(Color.BLACK);
         rect.setStrokeWidth(1);
+    }
+
+    protected static Label createBody(VBox vBox) {
+        Label l = ItemProjection.createBody(vBox);
+        l.getStyleClass().add("link_body");
+        return l;
     }
 
 }

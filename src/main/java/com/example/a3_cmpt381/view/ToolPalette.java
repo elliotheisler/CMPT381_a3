@@ -1,7 +1,7 @@
 package com.example.a3_cmpt381.view;
 
 import com.example.a3_cmpt381.AppController;
-import com.example.a3_cmpt381.model.InteractionModel;
+import com.example.a3_cmpt381.model.interaction_model.InteractionModel;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.control.*;

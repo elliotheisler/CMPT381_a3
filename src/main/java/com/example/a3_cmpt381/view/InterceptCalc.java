@@ -61,7 +61,7 @@ final class InterceptCalc {
     }
 
     private static Intercept getHorizontalIntercept(double slope, double yIntercept, double horiz) {
-        slope = slope == 0 ? 0.000001 : slope;
+//        slope = slope == 0 ? 1e-12 : slope; // dont' deal with zero
         // slope * x + yIntercept = horiz
         return new Intercept(
                 (horiz - yIntercept) / slope,
@@ -78,7 +78,7 @@ final class InterceptCalc {
     }
 
     private static Intercept getVerticalIntercept(double slope, double yIntercept, double vert) {
-        slope = slope == 0 ? 0.000001 : slope;
+//        slope = slope == 0 ? 1e-12 : slope; // don't deal with zero
         return new Intercept(
                 vert,
                 slope * vert + yIntercept

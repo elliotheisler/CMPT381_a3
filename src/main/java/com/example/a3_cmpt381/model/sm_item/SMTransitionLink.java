@@ -11,6 +11,12 @@ public class SMTransitionLink extends SMItem {
             context = "",
             sideEffect = "";
 
+    public void setText(LinkText newText) {
+        event = newText.event();
+        context = newText.context();
+        sideEffect = newText.sideEffect();
+    }
+
     public String getEvent() {
         return event;
     }
@@ -50,7 +56,7 @@ public class SMTransitionLink extends SMItem {
         super(x, y, WIDTH, HEIGHT);
         this.source = source;
         this.drain = drain;
-//        type = SMItemType.LINK;
+//        TYPE = SMItemType.LINK;
     }
 
     public static SMTransitionLink fromSourceDrain(SMStateNode source, SMStateNode drain) {
@@ -59,7 +65,7 @@ public class SMTransitionLink extends SMItem {
     }
 
     /* used to create transition links.
-     * get the corner of a rectangle of this type when it is positioned between the midpoints
+     * get the corner of a rectangle of this TYPE when it is positioned between the midpoints
      * of the source and drain
      */
     private static Point2D getPosBetween(SMItem source, SMItem drain) {
@@ -70,6 +76,6 @@ public class SMTransitionLink extends SMItem {
     }
 
     protected void setType() {
-        type = SMItemType.LINK;
+        TYPE = SMItemType.LINK;
     }
 }

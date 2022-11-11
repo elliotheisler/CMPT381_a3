@@ -1,11 +1,13 @@
-package com.example.a3_cmpt381.model;
+package com.example.a3_cmpt381.model.interaction_model;
 
+import com.example.a3_cmpt381.model.ModelBase;
+import com.example.a3_cmpt381.model.SMModel;
 import com.example.a3_cmpt381.model.sm_item.SMItem;
 import com.example.a3_cmpt381.model.sm_item.SMItemType;
 import com.example.a3_cmpt381.model.sm_item.SMStateNode;
 import com.example.a3_cmpt381.model.sm_item.SMTransitionLink;
+import com.example.a3_cmpt381.view.EditorText;
 import javafx.geometry.Point2D;
-import javafx.scene.shape.Polygon;
 
 import static java.lang.Math.pow;
 
@@ -46,7 +48,7 @@ public class InteractionModel extends ModelBase {
     public void dragUpdate(Point2D newCursorPos) {
         this.cursorPos = newCursorPos;
         if (dragInitiated || squareDistance(initCursor, newCursorPos) >= DRAG_THRESHOLD) {
-            lastChange = (selected.type == SMItemType.NODE)
+            lastChange = (selected.TYPE == SMItemType.NODE)
                     ? ModelTransition.DRAGGING_NODE
                     : ModelTransition.DRAGGING_LINK;
             dragInitiated = true;
@@ -57,7 +59,7 @@ public class InteractionModel extends ModelBase {
     
     public void dragRelease(SMModel smModel) {
         if (smModel.anyIntersects(selected)) {
-            lastChange = (selected.type == SMItemType.NODE)
+            lastChange = (selected.TYPE == SMItemType.NODE)
                     ? ModelTransition.DRAGGING_NODE
                     : ModelTransition.DRAGGING_LINK;
             selected.setMin(initSelected);
@@ -81,13 +83,17 @@ public class InteractionModel extends ModelBase {
     }
     
     public void linkRelease(SMModel smModel) {
+        setLastChange(ModelTransition.END_LINKING);
         SMStateNode end = smModel.getNode(viewportToWorld(cursorPos));
-        if (end == null)
+        if (end == null) {
+            changedItem = null;
+            notifySubscribers();
             return;
-        setLastChange(ModelTransition.ADD_LINK);
+        }
         SMTransitionLink newLink = SMTransitionLink.fromSourceDrain((SMStateNode) getSelectedItem(), end);
         changedItem = newLink;
         smModel.addLink(newLink);
+        lastChange = ModelTransition.NONE;
     }
 
     public void panStart(Point2D cursorPos) {
@@ -104,6 +110,7 @@ public class InteractionModel extends ModelBase {
     public void deselect() {
         lastChange = ModelTransition.DESELECT;
         changedItem = selected;
+        selected = null;
         notifySubscribers();
     }
 
@@ -131,6 +138,31 @@ public class InteractionModel extends ModelBase {
     public void setCursorMode(CursorMode c) {
         cursorMode = c;
         notifySubscribers();
+    }
+
+    public void updateText(EditorText updatedText) {
+        if (selected == null)
+            return;
+        switch (selected.TYPE) {
+            case NODE:
+                SMStateNode selNode = (SMStateNode) selected;
+                selNode.setName(updatedText.node().name());
+                break;
+            case LINK:
+                SMTransitionLink selLink = (SMTransitionLink) selected;
+                selLink.setText(updatedText.link());
+        }
+        changedItem = selected;
+        lastChange = ModelTransition.UPDATE_TEXT;
+        notifySubscribers();
+        lastChange = ModelTransition.NONE;
+    }
+
+    public void select(SMItem item) {
+        changedItem = selected = item;
+        lastChange = ModelTransition.SELECT;
+        notifySubscribers();
+        lastChange = ModelTransition.NONE;
     }
 
     private InteractionState iState = InteractionState.READY;
