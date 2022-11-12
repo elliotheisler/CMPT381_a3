@@ -41,10 +41,10 @@ abstract class ProjectionPane extends StackPane implements ModelListener {
 
 
     public void setController(AppController controller) {
-        viewport.setOnMousePressed(e -> controller.mousePressCanvas(e));
-        viewport.setOnMouseClicked(e -> controller.mouseClickCanvas(e));
-        viewport.setOnMouseReleased(e -> controller.mouseReleaseCanvas(e));
-        viewport.setOnMouseDragged(e -> controller.mouseDraggedCanvas(e));
+        setOnMousePressed(e -> controller.mousePressCanvas(e));
+        setOnMouseClicked(e -> controller.mouseClickCanvas(e));
+        setOnMouseReleased(e -> controller.mouseReleaseCanvas(e));
+        setOnMouseDragged(e -> controller.mouseDraggedCanvas(e));
     }
 
 

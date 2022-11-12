@@ -62,3 +62,7 @@
 .editor_pane .button {
     -fx-padding: 4;
 }
+
+.miniature_rect {
+    -fx-opacity: 0.1;
+}

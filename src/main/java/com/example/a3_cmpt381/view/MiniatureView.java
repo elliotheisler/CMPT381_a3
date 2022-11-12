@@ -11,6 +11,7 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Point2D;
@@ -23,33 +24,33 @@ import javafx.scene.shape.Rectangle;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.lang.Math.min;
+
 public class MiniatureView extends ProjectionPane {
     Pane parent;
-    DoubleProperty scale = new SimpleDoubleProperty();
+//    DoubleProperty scale = new SimpleDoubleProperty();
+    double scale;
 
     public MiniatureView(Pane parent) {
         super();
         getStyleClass().add("MiniatureView");
         this. parent = parent;
-        scale.bind(Bindings.min(parent.widthProperty(), parent.heightProperty()));
-        setOpacity(0);
-        viewport.setOpacity(0);
+//        scale.bind(Bindings.min(parent.widthProperty(), parent.heightProperty()));
     }
 
     public Point2D worldToViewport(Point2D p) {
         return p.multiply(scale());
     }
 
-    public void setController(AppController c) {} // no event handling, view only
+    public final void setController(AppController c) {} // no event dispatching, view only
 
     public Rectangle createMainRect() {
         Rectangle mainRect = new Rectangle();
         mainRect.getStyleClass().add("miniature_rect");
-        mainRect.toFront();
         mainRect.setFill(Color.BLACK);
         mainRect.setWidth(SMModel.SIZE);
         mainRect.setHeight(SMModel.SIZE);
-        mainRect.setOpacity(0.3);
+        mainRect.setOpacity(0.1);
         return mainRect;
     }
 
@@ -58,10 +59,13 @@ public class MiniatureView extends ProjectionPane {
         mainRect.setTranslateX(newCorner.getX());
         mainRect.setTranslateY(newCorner.getY());
         mainRect.setScaleX(scale());
-        mainRect.setScaleX(scale());
+        mainRect.setScaleY(scale());
     }
 
     public double scale() {
-        return scale.get();
+//        return scale.get();
+        double s = min(parent.widthProperty().get(), parent.heightProperty().get()) / SMModel.SIZE;
+        System.out.println("scale: " + s);
+        return s;
     }
 }

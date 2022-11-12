@@ -32,7 +32,8 @@ public class DiagramView extends ProjectionPane {
         super();
         getStyleClass().add("DiagramView");
         viewport.getStyleClass().add("viewport");
-//        getChildren().add(miniView); TODO
+        getChildren().add(miniView);
+        miniView.toFront();
     }
 
     public void setSMModel(SMModel smModel) {
