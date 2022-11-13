@@ -1,3 +1,7 @@
+# emh189
+# 11287423
+# CMPT 381
+
 Built with Maven. run from EditorApp.
 
 I keep model and view concerns seperate. Model knows nothing about the view at any point.
