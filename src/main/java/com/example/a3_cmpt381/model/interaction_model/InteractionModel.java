@@ -114,7 +114,8 @@ public class InteractionModel extends ModelBase {
 
     public void panUpdate(Point2D cursorPos) {
         lastChange = ModelTransition.UPDATE_PANNING;
-        translatePos = translatePos.add(cursorPos).subtract(this.cursorPos);
+        // translation moves opposite to drag direction
+        translatePos = translatePos.subtract(cursorPos).add(this.cursorPos);
         this.cursorPos = cursorPos;
         notifySubscribers();
     }
@@ -186,11 +187,11 @@ public class InteractionModel extends ModelBase {
     }
 
     public Point2D viewportToWorld(Point2D p) {
-        return p == null ? null : p.subtract(translatePos);
+        return p == null ? null : p.add(translatePos);
     }
 
     public Point2D worldToViewport(Point2D p) {
-        return p == null ? null : p.add(translatePos);
+        return p == null ? null : p.subtract(translatePos);
     }
     
     private static double squareDistance(Point2D a, Point2D b) {

@@ -63,6 +63,6 @@
     -fx-padding: 4;
 }
 
-.miniature_rect {
-    -fx-opacity: 0.1;
+.mini {
+    -fx-opacity: 0.2;
 }

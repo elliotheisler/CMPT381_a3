@@ -96,4 +96,15 @@ public class Arrow {
                 y
         ));
     }
+    
+    public void setMini(Double scale) {
+        line.setScaleX(scale);
+        line.setScaleY(scale);
+        head.setScaleX(scale);
+        head.setScaleY(scale);
+        line.setStartX(line.getStartX() * scale);
+        line.setStartY(line.getStartY() * scale);
+        line.setEndX(line.getEndX() * scale);
+        line.setEndY(line.getEndY() * scale);
+    }
 }
