@@ -1,4 +1,14 @@
 # State-Machine Diagram Editor
 
-This was my submission for Assignment 3 of CMPT 381 during the Fall 2022 Term at the UofS. It is published here
-to display my ability to write small-scale applications.
+This is an assignment I completed for CMPT 381 during the Fall 2022 Term at the UofS. It is published here
+to demonstrate some competency in writing small-skill apps.
+
+### Demo
+![ Sped-up example of building a state-machine representation of the TCP protocol ]( ./demo.gif )
+Sped-up example of building a state-machine representation of the TCP protocol
+
+### Running
+
+In the project root directory:
+
+`mvn install && mvn javafx:run`
