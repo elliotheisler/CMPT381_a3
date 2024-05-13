@@ -5,7 +5,8 @@ to demonstrate some competency in writing small-skill apps.
 
 ### Demo
 ![ Sped-up example of building a state-machine representation of the TCP protocol ]( ./demo.gif )
-Sped-up example of building a state-machine representation of the TCP protocol
+
+Sped-up example of a user building a state-machine representation of the TCP protocol.
 
 ### Running
 
